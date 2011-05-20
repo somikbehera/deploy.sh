@@ -16,14 +16,14 @@ If you don't use Maverick for development, or have an extra computer handy, you 
 
 ### Get the code
 
+Prerequisites: curl & sudo
+
+    apt-get install -y sudo curl
+
 Then, get nova.sh
 
     curl -O https://github.com/cloudbuilders/deploy.sh/raw/master/nova.sh
     chmod 755 nova.sh
-
-Note SUDO is required:
-
-    apt-get install sudo
 
 ### Usage
 
