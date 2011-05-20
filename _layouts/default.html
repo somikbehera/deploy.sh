@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+    <title>Rackspace Cloud Builders - {{ page.title }}</title>
+    <link href="http://github.com/stylesheets/bundle_common.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="http://github.com/stylesheets/bundle_github.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/screen.css" media="screen" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+      code {
+        background-color: black;
+        border: 1px solid #DEDEDE !important;
+        color: #0F0;
+        font-size: 12px !important;
+        margin: 1em 0px !important;
+        padding: 0.5em !important;
+        font: normal normal normal 12px/normal Monaco, 'Courier New', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+        display: block;
+        width: 100%;
+        overflow-x: scroll;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main">
+      <div id="header" class="basic" style="margin-bottom:20px">
+
+        <div class="site">
+          <div class="logo boring">
+            <img src="/deploy.sh/assets/rackspace_logo.png" alt="Rackspace Hosting" style="left: 880px; float: left" />
+            <h1><a href="/deploy.sh/">Rackspace Cloud Builders</a>: {{ page.title }}</h1>
+          </div>
+        </div>
+      </div>
+
+      <div id="content" class="site">
+
+        {{ content }}
+
+      </div>
+
+      <div class="push"></div>
+    </div>
+
+    <div id="footer">
+      <div class="site">
+
+        <div class="info">
+          <div class="company">
+           &copy;
+            {{ site.time | date: "%Y" }}
+            Rackspace, US Inc.
+            All rights reserved.
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
