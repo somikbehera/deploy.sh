@@ -18,8 +18,12 @@ If you don't use Maverick for development, or have an extra computer handy, you 
 
 Then, get nova.sh
 
-    curl -O https://github.com/vishvananda/novascript/raw/master/nova.sh
+    curl -O https://github.com/cloudbuilders/deploy.sh/raw/master/nova.sh
     chmod 755 nova.sh
+
+Note SUDO is required:
+
+    apt-get install sudo
 
 ### Usage
 
