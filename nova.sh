@@ -100,6 +100,7 @@ if [ "$CMD" == "install" ]; then
     sudo apt-get install -y python-libvirt python-libxml2 python-routes
     sudo apt-get install -y python-netaddr python-pastedeploy
     # force to ppa if required since maverick is newer than 0.9.12
+    # /usr/lib/pymodules/python2.6/eventlet/green# curl https://bitbucket-assetroot.s3.amazonaws.com/which_linden/eventlet/20110214/77/greenpipe-wrap.patch | patch
     sudo apt-get install -y python-eventlet || sudo apt-get install -y python-eventlet=0.9.12-0ubuntu2
     sudo apt-get install -y python-novaclient python-glance python-cheetah
     sudo apt-get install -y python-carrot python-tempita python-sqlalchemy
@@ -226,7 +227,7 @@ NOVA_CONF_EOF
     screen_it network "$NOVA_DIR/bin/nova-network"
     screen_it scheduler "$NOVA_DIR/bin/nova-scheduler"
     if [ "$ENABLE_DASH" == 1 ]; then
-        screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:8080"
+        screen_it dash "echo http://$HOST_IP:8080/; cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:8080"
     fi
     if [ "$ENABLE_VOLUMES" == 1 ]; then
         screen_it volume "$NOVA_DIR/bin/nova-volume"
