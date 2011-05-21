@@ -85,10 +85,10 @@ if [ "$CMD" == "install" ]; then
     sudo apt-get install -y python-netaddr python-pastedeploy python-eventlet
     sudo apt-get install -y python-novaclient python-glance python-cheetah
     sudo apt-get install -y python-carrot python-tempita python-sqlalchemy
-    sudo apt-get install -y python-suds
+    sudo apt-get install -y python-suds python-lockfile
 
     if [ "$ENABLE_DASH" == 1 ]; then
-        apt-get install git-core python-setuptools build-essential -y
+        apt-get install git-core python-setuptools python-dev -y
         easy_install virtualenv
         git clone git://github.com/sleepsonthefloor/openstackAPI.git dash
         cd /root/dash/openstack-dashboard
