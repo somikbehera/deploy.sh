@@ -111,6 +111,19 @@ At this point if you hit enter, you will be asked to login.  The username/passwo
     
     root@hacking:~# 
 
+### OPTIONAL: Use apt-cacher
+
+To serve a cached apt-repo from your host system you can setup apt-cacher:
+
+    apt-get install apt-cacher
+    echo "path_map = debian ftp.uni-kl.de/pub/linux/debian ftp2.de.debian.org/debian ; ubuntu archive.ubuntu.com/ubuntu ; security security.debian.org/debian-security ftp2.de.debian.org/debian-security" >> /etc/apt-cacher/apt-cacher.conf
+    echo "AUTOSTART=1" > /etc/default/apt-cacher
+    /etc/init.d/apt-cacher restart
+
+Then on your containers update your source list to point to your server before you use apt.
+
+    echo "deb http://192.168.2.2:3142/ubuntu maverick main universe" > /etc/apt/sources.list
+
 ### Getting Started
 
 The container is pretty bare-bones (no sudo, curl, wget, ...).  
