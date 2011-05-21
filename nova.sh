@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 DIR=`pwd`
 CMD=$1
+
+USE_GIT=${USE_GIT:-0}
+
 if [ "$CMD" = "branch" ]; then
-    SOURCE_BRANCH=${2:-lp:nova}
+    if [ "$USE_GIT" == 1 ]; then
+        SOURCE_BRANCH=${2:-master}
+    else
+        SOURCE_BRANCH=${2:-lp:nova}
+    fi
     DIRNAME=${3:-nova}
 else
     DIRNAME=${2:-nova}
@@ -17,8 +24,8 @@ if [ ! -n "$HOST_IP" ]; then
     HOST_IP=`LC_ALL=C ifconfig  | grep -m 1 'inet addr:'| cut -d: -f2 | awk '{print $1}'`
 fi
 
-ENABLE_VOLUMES=${ENABLE_VOLUMES:-0}
-ENABLE_DASH=${ENABLE_DASH:-1}
+ENABLE_VOLUMES=${ENABLE_VOLUMES:-1}
+ENABLE_DASH=${ENABLE_DASH:-0}
 USE_MYSQL=${USE_MYSQL:-0}
 INTERFACE=${INTERFACE:-eth0}
 FLOATING_RANGE=${FLOATING_RANGE:-10.6.0.0/27}
@@ -50,13 +57,20 @@ else
 fi
 
 if [ "$CMD" == "branch" ]; then
-    sudo apt-get install -y bzr
-    if [ ! -e "$DIR/.bzr" ]; then
-        bzr init-repo $DIR
-    fi
     rm -rf $NOVA_DIR
-    bzr branch $SOURCE_BRANCH $NOVA_DIR
-    cd $NOVA_DIR
+    if [ "$USE_GIT" == 1 ]; then
+        sudo apt-get install -y git-core
+        git clone https://github.com/openstack/nova.git $NOVA_DIR
+        cd $NOVA_DIR
+        git checkout $SOURCE_BRANCH
+    else
+        sudo apt-get install -y bzr
+        if [ ! -e "$DIR/.bzr" ]; then
+            bzr init-repo $DIR
+        fi
+        bzr branch $SOURCE_BRANCH $NOVA_DIR
+        cd $NOVA_DIR
+    fi
     mkdir -p $NOVA_DIR/instances
     mkdir -p $NOVA_DIR/networks
     exit
