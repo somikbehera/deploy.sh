@@ -18,6 +18,7 @@ if [ ! -n "$HOST_IP" ]; then
 fi
 
 ENABLE_VOLUMES=${ENABLE_VOLUMES:-0}
+ENABLE_DASH=${ENABLE_DASH:-1}
 USE_MYSQL=${USE_MYSQL:-0}
 INTERFACE=${INTERFACE:-eth0}
 FLOATING_RANGE=${FLOATING_RANGE:-10.6.0.0/27}
@@ -86,6 +87,14 @@ if [ "$CMD" == "install" ]; then
     sudo apt-get install -y python-carrot python-tempita python-sqlalchemy
     sudo apt-get install -y python-suds
 
+    if [ "$ENABLE_DASH" == 1 ]; then
+        apt-get install git-core python-setuptools -y
+        easy_install virtualenv
+        git clone git://github.com/sleepsonthefloor/openstackAPI.git dash
+        cd /root/dash/openstack-dashboard
+        cp local/local_settings.py.example local/local_settings.py
+        python tools/install_venv.py
+    fi
 
     if [ "$USE_IPV6" == 1 ]; then
         sudo apt-get install -y radvd
@@ -196,6 +205,9 @@ NOVA_CONF_EOF
     screen_it compute "$NOVA_DIR/bin/nova-compute"
     screen_it network "$NOVA_DIR/bin/nova-network"
     screen_it scheduler "$NOVA_DIR/bin/nova-scheduler"
+    if [ "$ENABLE_DASH" == 1 ]; then
+        screen_it dash "/root/dash/openstack-dashboard/tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:8080"
+    fi
     if [ "$ENABLE_VOLUMES" == 1 ]; then
         screen_it volume "$NOVA_DIR/bin/nova-volume"
     fi
