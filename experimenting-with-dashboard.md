@@ -12,6 +12,10 @@ Some of our objectives include:
 * Experimenting with UI
 * and more...
 
+Install the prerequisites
+
+    apt-get install -y git-core python-dev build-essential
+    easy_install virtualenv
 
 To get started, grab the code:
 
@@ -22,24 +26,19 @@ Then update your local_settings.py.  For starters, just copy over local_settings
     cd openstackAPI/openstack-dashboard
     cp local/local_settings.py.example local/local_settings.py
 
-
 For local development, first create a virtualenv for local development.  A tool is included to create one for you:
 
-  python tools/install_venv.py
-
+    python tools/install_venv.py
 
 Now, issue the django syncdb command:
 
-  $ tools/with_venv.sh dashboard/manage.py syncdb
+    tools/with_venv.sh dashboard/manage.py syncdb
 
 If after you have specified the admin user the script appears to hang, it
 probably means the installation of Nova being referred to in local_settings.py
 is unavailable.
 
-
 If all is well you should now able to run the server locally:
 
-  $ tools/with_venv.sh dashboard/manage.py runserver
-
-
+    tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:8080
 

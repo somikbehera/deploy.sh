@@ -131,10 +131,6 @@ The container is pretty bare-bones (no sudo, curl, wget, ...).
     apt-get update
     apt-get install -y vim curl wget sudo
 
-Nova needs open-iscsi, which fails to install in the maverick template without creating a directory:
-
-    mkdir /lib/init/rw/sendsigs.omit.d/
-
 If you then follow the instructions on [hacking nova](hacking-nova.html) you will end up with an install of nova using screen within a screen.  To fix this frustration you can install __openssh-server__ add your SSH key to this machine.  Then create a new terminal and ssh directly into the container.
 
 ### Turning off the container
