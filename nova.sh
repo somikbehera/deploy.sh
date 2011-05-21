@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -o errexit
 DIR=`pwd`
 CMD=$1
 
@@ -16,6 +17,7 @@ else
 fi
 
 NOVA_DIR=$DIR/$DIRNAME
+DASH_DIR=$DIR/dash
 
 if [ ! -n "$HOST_IP" ]; then
     # NOTE(vish): This will just get the first ip in the list, so if you
@@ -90,13 +92,15 @@ if [ "$CMD" == "install" ]; then
         echo "ISCSITARGET_ENABLE=true" | sudo tee /etc/default/iscsitarget
         sudo /etc/init.d/iscsitarget restart
     fi
-    sudo modprobe kvm
+    sudo modprobe kvm || true
     sudo /etc/init.d/libvirt-bin restart
-    sudo modprobe nbd
+    sudo modprobe nbd || true
     sudo apt-get install -y python-twisted python-mox python-ipy python-paste
     sudo apt-get install -y python-migrate python-gflags python-greenlet
     sudo apt-get install -y python-libvirt python-libxml2 python-routes
-    sudo apt-get install -y python-netaddr python-pastedeploy python-eventlet
+    sudo apt-get install -y python-netaddr python-pastedeploy
+    # force to ppa if required since maverick is newer than 0.9.12
+    sudo apt-get install -y python-eventlet || sudo apt-get install -y python-eventlet=0.9.12-0ubuntu2
     sudo apt-get install -y python-novaclient python-glance python-cheetah
     sudo apt-get install -y python-carrot python-tempita python-sqlalchemy
     sudo apt-get install -y python-suds python-lockfile
@@ -104,10 +108,12 @@ if [ "$CMD" == "install" ]; then
     if [ "$ENABLE_DASH" == 1 ]; then
         apt-get install git-core python-setuptools python-dev -y
         easy_install virtualenv
-        git clone git://github.com/sleepsonthefloor/openstackAPI.git dash
-        cd /root/dash/openstack-dashboard
+        rm -rf $DASH_DIR
+        git clone git://github.com/sleepsonthefloor/openstackAPI.git $DASH_DIR
+        cd $DASH_DIR/openstack-dashboard
         cp local/local_settings.py.example local/local_settings.py
         python tools/install_venv.py
+        tools/with_venv.sh dashboard/manage.py syncdb
     fi
 
     if [ "$USE_IPV6" == 1 ]; then
@@ -172,7 +178,7 @@ NOVA_CONF_EOF
         mysql -p$MYSQL_PASS -e 'DROP DATABASE nova;'
         mysql -p$MYSQL_PASS -e 'CREATE DATABASE nova;'
     else
-        rm $NOVA_DIR/nova.sqlite
+        rm -f $NOVA_DIR/nova.sqlite
     fi
     if [ "$USE_LDAP" == 1 ]; then
         if [ "$USE_OPENDJ" == 1 ]; then
@@ -220,7 +226,7 @@ NOVA_CONF_EOF
     screen_it network "$NOVA_DIR/bin/nova-network"
     screen_it scheduler "$NOVA_DIR/bin/nova-scheduler"
     if [ "$ENABLE_DASH" == 1 ]; then
-        screen_it dash "/root/dash/openstack-dashboard/tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:8080"
+        screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:8080"
     fi
     if [ "$ENABLE_VOLUMES" == 1 ]; then
         screen_it volume "$NOVA_DIR/bin/nova-volume"
