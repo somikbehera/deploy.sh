@@ -17,7 +17,8 @@ if [ ! -n "$HOST_IP" ]; then
     HOST_IP=`LC_ALL=C ifconfig  | grep -m 1 'inet addr:'| cut -d: -f2 | awk '{print $1}'`
 fi
 
-USE_MYSQL=${USE_MYSQL:-1}
+ENABLE_VOLUMES=${ENABLE_VOLUMES:-0}
+USE_MYSQL=${USE_MYSQL:-0}
 INTERFACE=${INTERFACE:-eth0}
 FLOATING_RANGE=${FLOATING_RANGE:-10.6.0.0/27}
 FIXED_RANGE=${FIXED_RANGE:-10.0.0.0/24}
@@ -67,13 +68,13 @@ if [ "$CMD" == "install" ]; then
     sudo apt-get update
     sudo apt-get install -y dnsmasq-base kpartx kvm gawk iptables ebtables
     sudo apt-get install -y user-mode-linux kvm libvirt-bin
-    # Bypass  RabbitMQ "OK" dialog 
-    echo "rabbitmq-server rabbitmq-server/upgrade_previous note" | sudo debconf-set-selections
     sudo apt-get install -y screen euca2ools vlan curl rabbitmq-server
-    sudo apt-get install -y lvm2 iscsitarget open-iscsi
-    sudo apt-get install -y socat unzip wget
-    echo "ISCSITARGET_ENABLE=true" | sudo tee /etc/default/iscsitarget
-    sudo /etc/init.d/iscsitarget restart
+    sudo apt-get install -y socat unzip wget psmisc
+    if [ "$ENABLE_VOLUMES" == 1 ]; then
+        sudo apt-get install -y lvm2 iscsitarget open-iscsi
+        echo "ISCSITARGET_ENABLE=true" | sudo tee /etc/default/iscsitarget
+        sudo /etc/init.d/iscsitarget restart
+    fi
     sudo modprobe kvm
     sudo /etc/init.d/libvirt-bin restart
     sudo modprobe nbd
@@ -93,12 +94,14 @@ if [ "$CMD" == "install" ]; then
     fi
 
     if [ "$USE_MYSQL" == 1 ]; then
-        cat <<MYSQL_PRESEED | sudo debconf-set-selections
+        cat <<MYSQL_PRESEED | debconf-set-selections
 mysql-server-5.1 mysql-server/root_password password $MYSQL_PASS
 mysql-server-5.1 mysql-server/root_password_again password $MYSQL_PASS
 mysql-server-5.1 mysql-server/start_on_boot boolean true
 MYSQL_PRESEED
         sudo apt-get install -y mysql-server python-mysqldb
+    else
+        sudo apt-get install -y sqlite3 python-pysqlite2
     fi
     mkdir -p $DIR/images
     wget -c http://images.ansolabs.com/tty.tgz
@@ -161,6 +164,10 @@ NOVA_CONF_EOF
     mkdir -p $NOVA_DIR/instances
     rm -rf $NOVA_DIR/networks
     mkdir -p $NOVA_DIR/networks
+    if [ ! -d "$NOVA_DIR/images" ]; then
+        ln -s $DIR/images $NOVA_DIR/images
+    fi
+
     if [ "$TEST" == 1 ]; then
         cd $NOVA_DIR
         python $NOVA_DIR/run_tests.py
@@ -179,18 +186,8 @@ NOVA_CONF_EOF
     # create some floating ips
     $NOVA_DIR/bin/nova-manage floating create `hostname` $FLOATING_RANGE
 
-    if [ ! -d "$NOVA_DIR/images" ]; then
-        if [ ! -d "$DIR/converted-images" ]; then
-            # convert old images
-            mkdir $DIR/converted-images
-            ln -s $DIR/converted-images $NOVA_DIR/images
-            $NOVA_DIR/bin/nova-manage image convert $DIR/images
-        else
-            ln -s $DIR/converted-images $NOVA_DIR/images
-        fi
-
-    fi
-
+    # convert old images
+    $NOVA_DIR/bin/nova-manage image convert $DIR/images
 
     # nova api crashes if we start it with a regular screen command,
     # so send the start command by forcing text into the window.
@@ -199,7 +196,9 @@ NOVA_CONF_EOF
     screen_it compute "$NOVA_DIR/bin/nova-compute"
     screen_it network "$NOVA_DIR/bin/nova-network"
     screen_it scheduler "$NOVA_DIR/bin/nova-scheduler"
-    screen_it volume "$NOVA_DIR/bin/nova-volume"
+    if [ "$ENABLE_VOLUMES" == 1 ]; then
+        screen_it volume "$NOVA_DIR/bin/nova-volume"
+    fi
     screen_it ajax_console_proxy "$NOVA_DIR/bin/nova-ajax-console-proxy"
     sleep 2
     # export environment variables for project 'admin' and user 'admin'
