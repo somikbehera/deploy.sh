@@ -12,6 +12,11 @@ Some of our objectives include:
 * Experimenting with UI
 * and more...
 
+Install the prerequisites
+
+    apt-get install -y git-core python-dev build-essential
+    easy_install virtualenv
+
 To get started, grab the code:
 
     git clone git://github.com/sleepsonthefloor/openstackAPI.git
@@ -35,7 +40,5 @@ is unavailable.
 
 If all is well you should now able to run the server locally:
 
-    tools/with_venv.sh dashboard/manage.py runserver
-
-
+    tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:8080
 
