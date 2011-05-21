@@ -3,9 +3,9 @@ title: Hacking Nova in LXC
 layout: default
 ---
 
-**work in progress**: this document is a work in progress.  Please don't follow it if you don't understand what it does
+# This document is a work in progress.  Please don't follow it if you don't understand what it does
 
-http://cloudbuilders.github.com/deploy.sh/hacking-nova.html covers how to use develop nova.  This guide is how to develop within an LXC container, so you can minimize the packages installed on your ubuntu system.
+[Hacking nova](hacking-nova.html) covers how to use develop nova.  This guide is how to develop within an LXC container, so you can minimize the packages installed on your ubuntu system.
 
 ### Preqequisites
 
@@ -122,7 +122,7 @@ Nova needs open-iscsi, which fails to install in the maverick template without c
 
     mkdir /lib/init/rw/sendsigs.omit.d/
 
-If you then follow the instructions on http://cloudbuilders.github.com/deploy.sh/hacking-nova.html you will end up with an install of nova using screen within a screen.  To fix this frustration you can install __openssh-server__ add your SSH key to this machine.  Then create a new terminal and ssh directly into the container.
+If you then follow the instructions on [hacking nova](hacking-nova.html) you will end up with an install of nova using screen within a screen.  To fix this frustration you can install __openssh-server__ add your SSH key to this machine.  Then create a new terminal and ssh directly into the container.
 
 ### Turning off the container
 
