@@ -27,7 +27,15 @@ Then, get nova.sh
 
 ### Usage
 
-Use the script to install and run the current trunk. You can also specify a specific branch by putting lp:~someone/nova/some-branch after the branch command
+Use the script to install and run the current trunk. 
+
+There are several options you can specify with environment parameters:
+
+    export USE_GIT=1         # checkout source using github mirror
+    export ENABLE_VOLUMES=0  # disable volumes
+    export ENABLE_DASH=1     # install dashboard
+
+You can also specify a specific branch by putting lp:~someone/nova/some-branch after the branch command.
 
     ./nova.sh branch
     ./nova.sh install
