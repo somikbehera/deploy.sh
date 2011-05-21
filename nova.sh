@@ -88,7 +88,7 @@ if [ "$CMD" == "install" ]; then
     sudo apt-get install -y python-suds
 
     if [ "$ENABLE_DASH" == 1 ]; then
-        apt-get install git-core python-setuptools -y
+        apt-get install git-core python-setuptools build-essential -y
         easy_install virtualenv
         git clone git://github.com/sleepsonthefloor/openstackAPI.git dash
         cd /root/dash/openstack-dashboard
