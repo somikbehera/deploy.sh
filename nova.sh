@@ -112,7 +112,7 @@ if [ "$CMD" == "install" ]; then
         apt-get install git-core python-setuptools python-dev -y
         easy_install virtualenv
         rm -rf $DASH_DIR
-        git clone git://github.com/sleepsonthefloor/openstackAPI.git $DASH_DIR
+        git clone git://github.com/cloudbuilders/openstack-dashboard.git $DASH_DIR
         cd $DASH_DIR/openstack-dashboard
         cp local/local_settings.py.example local/local_settings.py
         python tools/install_venv.py
