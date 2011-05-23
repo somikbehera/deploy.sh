@@ -153,8 +153,8 @@ MYSQL_PRESEED
         sudo apt-get install -y sqlite3 python-pysqlite2
     fi
     mkdir -p $DIR/images
-    wget -c http://c2477062.cdn.cloudfiles.rackspacecloud.com/images.tgz
-    tar -C $DIR -zxf images.tgz
+    wget -c http://images.ansolabs.com/tty.tgz
+    tar -C $DIR/images -zxf tty.tgz
     exit
 fi
 
