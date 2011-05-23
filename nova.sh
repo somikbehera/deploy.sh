@@ -257,6 +257,7 @@ NOVA_CONF_EOF
         screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver $HOST_IP:80"
     fi
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
+        rm -f keystone/keystone/keystone.db
         screen_it keystone "cd $KEYSTONE_DIR/bin; ./keystone"
     fi
     if [ "$ENABLE_VOLUMES" == 1 ]; then
