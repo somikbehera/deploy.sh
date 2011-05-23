@@ -188,7 +188,7 @@ NOVA_CONF_EOF
         echo "--use_ipv6" >>$NOVA_DIR/bin/nova.conf
     fi
 
-    killall dnsmasq
+    killall dnsmasq || echo "no dnsmasqs killed"
     if [ "$USE_IPV6" == 1 ]; then
        killall radvd
     fi
@@ -274,17 +274,19 @@ NOVA_CONF_EOF
 fi
 
 if [ "$CMD" == "run" ] || [ "$CMD" == "terminate" ]; then
-    # shutdown instances
-    . $NOVA_DIR/novarc; euca-describe-instances | grep i- | cut -f2 | xargs euca-terminate-instances
-    sleep 2
-    # delete volumes
-    . $NOVA_DIR/novarc; euca-describe-volumes | grep vol- | cut -f2 | xargs -n1 euca-delete-volume
-    sleep 2
+    if [ "$ENABLE_KEYSTONE" == 0 ]; then
+        # shutdown instances
+        . $NOVA_DIR/novarc; euca-describe-instances | grep i- | cut -f2 | xargs euca-terminate-instances
+        sleep 2
+        # delete volumes
+        . $NOVA_DIR/novarc; euca-describe-volumes | grep vol- | cut -f2 | xargs -n1 euca-delete-volume
+        sleep 2
+    fi
 fi
 
 if [ "$CMD" == "run" ] || [ "$CMD" == "clean" ]; then
     screen -S nova -X quit
-    rm *.pid*
+    rm -f *.pid*
 fi
 
 if [ "$CMD" == "scrub" ]; then
