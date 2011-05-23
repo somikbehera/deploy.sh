@@ -130,9 +130,6 @@ if [ "$CMD" == "install" ]; then
         cd $KEYSTONE_DIR
         pip install -r pip-requires
 
-        # add default data
-        cd $KEYSTONE_DIR/bin; ./sample-data.sh
-
         # copy keystone librarys into nova
         cp $KEYSTONE_DIR/keystone/common/bufferedhttp.py $NOVA_DIR/nova/auth/
         cp $KEYSTONE_DIR/keystone/auth_protocols/nova_auth_token.py $NOVA_DIR/nova/auth/
@@ -230,10 +227,15 @@ NOVA_CONF_EOF
 
     # create the database
     $NOVA_DIR/bin/nova-manage db sync
-    # create an admin user called 'admin'
-    $NOVA_DIR/bin/nova-manage user admin admin admin admin
-    # create a project called 'admin' with project manager of 'admin'
-    $NOVA_DIR/bin/nova-manage project create admin admin
+    if [ "$ENABLE_KEYSTONE" == 0 ]; then
+        # create an admin user called 'admin'
+        $NOVA_DIR/bin/nova-manage user admin admin admin admin
+        # create a project called 'admin' with project manager of 'admin'
+        $NOVA_DIR/bin/nova-manage project create admin admin
+    else
+        # add default data
+        cd $KEYSTONE_DIR/bin; ./sample-data.sh
+    fi
     # create a small network
     $NOVA_DIR/bin/nova-manage network create $FIXED_RANGE 1 32
 
@@ -259,13 +261,15 @@ NOVA_CONF_EOF
     if [ "$ENABLE_VOLUMES" == 1 ]; then
         screen_it volume "$NOVA_DIR/bin/nova-volume"
     fi
-    screen_it ajax_console_proxy "$NOVA_DIR/bin/nova-ajax-console-proxy"
     sleep 2
-    # export environment variables for project 'admin' and user 'admin'
-    $NOVA_DIR/bin/nova-manage project zipfile admin admin $NOVA_DIR/nova.zip
-    unzip -o $NOVA_DIR/nova.zip -d $NOVA_DIR/
-
-    screen_it test "export PATH=$NOVA_DIR/bin:$PATH;. $NOVA_DIR/novarc"
+    if [ "$ENABLE_KEYSTONE" == 0 ]; then
+        # export environment variables for project 'admin' and user 'admin'
+        $NOVA_DIR/bin/nova-manage project zipfile admin admin $NOVA_DIR/nova.zip
+        unzip -o $NOVA_DIR/nova.zip -d $NOVA_DIR/
+        screen_it test "export PATH=$NOVA_DIR/bin:$PATH;. $NOVA_DIR/novarc"
+    else
+        screen_it test "echo 'no openstack cli automation yet'"
+    fi
     if [ "$CMD" != "run_detached" ]; then
       screen -S nova -x
     fi
