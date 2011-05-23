@@ -18,6 +18,7 @@ fi
 
 NOVA_DIR=$DIR/$DIRNAME
 DASH_DIR=$DIR/dash
+KEYSTONE_DIR=$DIR/keystone
 
 if [ ! -n "$HOST_IP" ]; then
     # NOTE(vish): This will just get the first ip in the list, so if you
