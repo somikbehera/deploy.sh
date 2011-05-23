@@ -128,12 +128,7 @@ if [ "$CMD" == "install" ]; then
         cd $KEYSTONE_DIR
         pip install -r pip-requires
 
-        # copy keystone librarys into nova
-        cp $KEYSTONE_DIR/keystone/common/bufferedhttp.py $NOVA_DIR/nova/auth/
-        cp $KEYSTONE_DIR/keystone/auth_protocols/nova_auth_token.py $NOVA_DIR/nova/auth/
-
-        # copy paste config to use nova_auth_token.py
-        cp $KEYSTONE_DIR/docs/nova-api-paste.ini $NOVA_DIR/etc/nova/api-paste.ini
+        ln -s $KEYSTONE_DIR/keystone $NOVA_DIR/keystone
     fi
 
     if [ "$USE_IPV6" == 1 ]; then
@@ -186,6 +181,10 @@ NOVA_CONF_EOF
 
     if [ "$USE_IPV6" == 1 ]; then
         echo "--use_ipv6" >>$NOVA_DIR/bin/nova.conf
+    fi
+
+    if [ "$ENABLE_KEYSTONE" == 1 ]; then
+        echo "--api_paste_config=$KEYSTONE_DIR/docs/nova-api-paste.ini" >>$NOVA_DIR/bin/nova.conf
     fi
 
     killall dnsmasq || echo "no dnsmasqs killed"
