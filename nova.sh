@@ -241,7 +241,7 @@ NOVA_CONF_EOF
     screen_it network "$NOVA_DIR/bin/nova-network"
     screen_it scheduler "$NOVA_DIR/bin/nova-scheduler"
     if [ "$ENABLE_DASH" == 1 ]; then
-        screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver $HOST_IP:8080"
+        screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver $HOST_IP:80"
     fi
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
         screen_it keystone "cd $KEYSTONE_DIR/bin; ./keystone"
