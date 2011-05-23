@@ -240,6 +240,9 @@ NOVA_CONF_EOF
     # create some floating ips
     $NOVA_DIR/bin/nova-manage floating create `hostname` $FLOATING_RANGE
 
+    # remove previously converted images
+    rm -rf $DIR/images/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]
+
     # convert old images
     $NOVA_DIR/bin/nova-manage image convert $DIR/images
 
