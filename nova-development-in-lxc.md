@@ -123,11 +123,13 @@ To serve a cached apt-repo from your host system you can setup apt-cacher:
 Then on your containers update your source list to point to your server before you use apt.
 
     echo "deb http://192.168.2.2:3142/ubuntu maverick main universe" > /etc/apt/sources.list
+    echo "deb http://192.168.2.2:3142/ubuntu maverick-updates main universe" >> /etc/apt/sources.list
 
 ### Getting Started
 
 The container is pretty bare-bones (no sudo, curl, wget, ...).  
 
+    echo "deb http://archive.ubuntu.com/ubuntu maverick-updates main universe" >> /etc/apt/sources.list
     apt-get update
     apt-get install -y vim curl wget sudo
 
