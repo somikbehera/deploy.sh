@@ -129,6 +129,13 @@ if [ "$CMD" == "install" ]; then
         git clone git://github.com/khussein/keystone.git $KEYSTONE_DIR
         cd $KEYSTONE_DIR
         pip install -r pip-requires
+
+        # copy keystone librarys into nova
+        cp $KEYSTONE_DIR/keystone/common/bufferedhttp.py $NOVA_DIR/nova/auth/
+        cp $KEYSTONE_DIR/keystone/auth_protocols/nova_auth_token.py $NOVA_DIR/nova/auth/
+
+        # copy paste config to use nova_auth_token.py
+        cp $KEYSTONE_DIR/docs/nova-api-paste.ini $NOVA_DIR/etc/nova/api-paste.ini
     fi
 
     if [ "$USE_IPV6" == 1 ]; then
