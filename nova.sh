@@ -193,7 +193,7 @@ NOVA_CONF_EOF
         echo "--use_ipv6" >>$NOVA_DIR/bin/nova.conf
     fi
 
-    killall dnsmasq
+    killall dnsmasq || echo "no dnsmasqs killed"
     if [ "$USE_IPV6" == 1 ]; then
        killall radvd
     fi
