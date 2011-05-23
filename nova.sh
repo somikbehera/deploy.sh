@@ -28,6 +28,7 @@ fi
 
 ENABLE_VOLUMES=${ENABLE_VOLUMES:-1}
 ENABLE_DASH=${ENABLE_DASH:-0}
+ENABLE_KEYSTONE=${ENABLE_KEYSTONE:-0}
 USE_MYSQL=${USE_MYSQL:-0}
 INTERFACE=${INTERFACE:-eth0}
 FLOATING_RANGE=${FLOATING_RANGE:-10.6.0.0/27}
@@ -115,6 +116,18 @@ if [ "$CMD" == "install" ]; then
         cp local/local_settings.py.example local/local_settings.py
         python tools/install_venv.py
         tools/with_venv.sh dashboard/manage.py syncdb
+    fi
+
+    if [ "$ENABLE_KEYSTONE" == 1 ]; then
+        apt-get install -y git-core python-setuptools python-dev python-lxml
+        apt-get install -y python-pastescript python-pastedeploy python-paste
+        apt-get install -y sqlite3 python-pysqlite2 python-sqlalchemy python-webob
+        apt-get install -y python-greenlet python-routes
+        easy_install pip
+        rm -rf $KEYSTONE_DIR
+        git clone git://github.com/khussein/keystone.git $KEYSTONE_DIR
+        cd $KEYSTONE_DIR
+        pip install -r pip-requires
     fi
 
     if [ "$USE_IPV6" == 1 ]; then
@@ -227,7 +240,10 @@ NOVA_CONF_EOF
     screen_it network "$NOVA_DIR/bin/nova-network"
     screen_it scheduler "$NOVA_DIR/bin/nova-scheduler"
     if [ "$ENABLE_DASH" == 1 ]; then
-        screen_it dash "echo http://$HOST_IP:8080/; cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:8080"
+        screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver $HOST_IP:8080"
+    fi
+    if [ "$ENABLE_KEYSTONE" == 1 ]; then
+        screen_it keystone "cd $KEYSTONE_DIR/bin; ./keystone"
     fi
     if [ "$ENABLE_VOLUMES" == 1 ]; then
         screen_it volume "$NOVA_DIR/bin/nova-volume"
