@@ -43,7 +43,7 @@ You can also specify a specific branch by putting lp:~someone/nova/some-branch a
 
 Unless you want to manually edit sudoers, you will need run nova as root
 
-    sudo ./nova.sh run
+    ./nova.sh run
 
 The run command will drop you into a screen session with all of the workers running in different windows  You can use eucatools to run commands against the cloud.
 
