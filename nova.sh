@@ -130,7 +130,8 @@ if [ "$CMD" == "install" ]; then
         cd $KEYSTONE_DIR
         pip install -r pip-requires
 
-        # FIXME(ja) add default data!
+        # add default data
+        cd $KEYSTONE_DIR/bin; ./sample-data.sh
 
         # copy keystone librarys into nova
         cp $KEYSTONE_DIR/keystone/common/bufferedhttp.py $NOVA_DIR/nova/auth/
