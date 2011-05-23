@@ -232,7 +232,7 @@ NOVA_CONF_EOF
         $NOVA_DIR/bin/nova-manage project create admin admin
     else
         # add default data
-        cd $KEYSTONE_DIR/bin; ./sample-data.sh
+        cd $KEYSTONE_DIR/bin; ./sampledata.sh
     fi
     # create a small network
     $NOVA_DIR/bin/nova-manage network create $FIXED_RANGE 1 32
