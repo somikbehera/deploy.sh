@@ -18,6 +18,7 @@ fi
 
 NOVA_DIR=$DIR/$DIRNAME
 DASH_DIR=$DIR/dash
+GLANCE_DIR=$DIR/glance
 KEYSTONE_DIR=$DIR/keystone
 
 if [ ! -n "$HOST_IP" ]; then
@@ -27,9 +28,13 @@ if [ ! -n "$HOST_IP" ]; then
     HOST_IP=`LC_ALL=C ifconfig  | grep -m 1 'inet addr:'| cut -d: -f2 | awk '{print $1}'`
 fi
 
-ENABLE_VOLUMES=${ENABLE_VOLUMES:-1}
-ENABLE_DASH=${ENABLE_DASH:-0}
-ENABLE_KEYSTONE=${ENABLE_KEYSTONE:-0}
+# OPENSTACK COMPONENTS
+ENABLE_VOLUMES=${ENABLE_VOLUMES:-0}
+ENABLE_DASH=${ENABLE_DASH:-1}
+ENABLE_KEYSTONE=${ENABLE_KEYSTONE:-1}
+ENABLE_GLANCE=${ENABLE_GLANCE:-1}
+
+# NOVA CONFIGURATION
 USE_MYSQL=${USE_MYSQL:-0}
 INTERFACE=${INTERFACE:-eth0}
 FLOATING_RANGE=${FLOATING_RANGE:-10.6.0.0/27}
@@ -63,12 +68,12 @@ fi
 if [ "$CMD" == "branch" ]; then
     rm -rf $NOVA_DIR
     if [ "$USE_GIT" == 1 ]; then
-        sudo apt-get install -y git-core
+        apt-get install -y git-core
         git clone https://github.com/openstack/nova.git $NOVA_DIR
         cd $NOVA_DIR
         git checkout $SOURCE_BRANCH
     else
-        sudo apt-get install -y bzr
+        apt-get install -y bzr
         if [ ! -e "$DIR/.bzr" ]; then
             bzr init-repo $DIR
         fi
@@ -82,29 +87,25 @@ fi
 
 # You should only have to run this once
 if [ "$CMD" == "install" ]; then
-    sudo apt-get install -y python-software-properties
-    sudo add-apt-repository ppa:nova-core/trunk
-    sudo apt-get update
-    sudo apt-get install -y dnsmasq-base kpartx kvm gawk iptables ebtables
-    sudo apt-get install -y user-mode-linux kvm libvirt-bin
-    sudo apt-get install -y screen euca2ools vlan curl rabbitmq-server
-    sudo apt-get install -y socat unzip wget psmisc
+    apt-get install -y python-software-properties
+    add-apt-repository ppa:nova-core/trunk
+    apt-get update
+    apt-get install -y dnsmasq-base kpartx kvm gawk iptables ebtables \
+        user-mode-linux kvm libvirt-bin screen vlan curl rabbitmq-server \
+        socat unzip wget psmisc
     if [ "$ENABLE_VOLUMES" == 1 ]; then
-        sudo apt-get install -y lvm2 iscsitarget open-iscsi
-        echo "ISCSITARGET_ENABLE=true" | sudo tee /etc/default/iscsitarget
-        sudo /etc/init.d/iscsitarget restart
+        apt-get install -y lvm2 iscsitarget open-iscsi
+        echo "ISCSITARGET_ENABLE=true" | tee /etc/default/iscsitarget
+        /etc/init.d/iscsitarget restart
     fi
-    sudo modprobe kvm || true
-    sudo /etc/init.d/libvirt-bin restart
-    sudo modprobe nbd || true
-    sudo apt-get install -y python-mox python-ipy python-paste
-    sudo apt-get install -y python-migrate python-gflags python-greenlet
-    sudo apt-get install -y python-libvirt python-libxml2 python-routes
-    sudo apt-get install -y python-netaddr python-pastedeploy
-    sudo apt-get install -y python-eventlet
-    sudo apt-get install -y python-novaclient python-glance python-cheetah
-    sudo apt-get install -y python-carrot python-tempita python-sqlalchemy
-    sudo apt-get install -y python-suds python-lockfile
+    modprobe kvm || true
+    /etc/init.d/libvirt-bin restart
+    modprobe nbd || true
+    apt-get install -y python-mox python-ipy python-paste python-migrate \
+        python-gflags python-greenlet python-libvirt python-libxml2 python-routes \
+        python-netaddr python-pastedeploy python-eventlet python-novaclient \
+        python-glance python-cheetah python-carrot python-tempita \
+        python-sqlalchemy python-suds python-lockfile python-m2crypto python-boto
 
     if [ "$ENABLE_DASH" == 1 ]; then
         apt-get install git-core python-setuptools python-dev -y
@@ -117,24 +118,33 @@ if [ "$CMD" == "install" ]; then
         tools/with_venv.sh dashboard/manage.py syncdb
     fi
 
+    if [ "$ENABLE_GLANCE" == 1 ]; then
+        rm -rf $GLANCE_DIR
+        apt-get install -y bzr python-eventlet python-routes python-greenlet \
+            python-argparse python-sqlalchemy python-wsgiref python-pastedeploy
+        bzr branch lp:glance $GLANCE_DIR
+        mkdir -p /var/log/glance
+    fi
+
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
-        apt-get install -y git-core python-setuptools python-dev python-lxml
-        apt-get install -y python-pastescript python-pastedeploy python-paste
-        apt-get install -y sqlite3 python-pysqlite2 python-sqlalchemy python-webob
-        apt-get install -y python-greenlet python-routes
+        apt-get install -y git-core python-setuptools python-dev python-lxml \
+            python-pastescript python-pastedeploy python-paste sqlite3 \
+            python-pysqlite2 python-sqlalchemy python-webob python-greenlet \
+            python-routes
         easy_install pip
         rm -rf $KEYSTONE_DIR
         git clone git://github.com/khussein/keystone.git $KEYSTONE_DIR
         cd $KEYSTONE_DIR
         pip install -r pip-requires
 
+        # allow keystone code to be imported into nova
         ln -s $KEYSTONE_DIR/keystone $NOVA_DIR/keystone
     fi
 
     if [ "$USE_IPV6" == 1 ]; then
-        sudo apt-get install -y radvd
-        sudo bash -c "echo 1 > /proc/sys/net/ipv6/conf/all/forwarding"
-        sudo bash -c "echo 0 > /proc/sys/net/ipv6/conf/all/accept_ra"
+        apt-get install -y radvd
+        bash -c "echo 1 > /proc/sys/net/ipv6/conf/all/forwarding"
+        bash -c "echo 0 > /proc/sys/net/ipv6/conf/all/accept_ra"
     fi
 
     if [ "$USE_MYSQL" == 1 ]; then
@@ -143,9 +153,9 @@ mysql-server-5.1 mysql-server/root_password password $MYSQL_PASS
 mysql-server-5.1 mysql-server/root_password_again password $MYSQL_PASS
 mysql-server-5.1 mysql-server/start_on_boot boolean true
 MYSQL_PRESEED
-        sudo apt-get install -y mysql-server python-mysqldb
+        apt-get install -y mysql-server python-mysqldb
     else
-        sudo apt-get install -y sqlite3 python-pysqlite2
+        apt-get install -y sqlite3 python-pysqlite2
     fi
     mkdir -p $DIR/images
     wget -c http://images.ansolabs.com/tty.tgz
@@ -160,34 +170,42 @@ function screen_it {
     screen -S nova -p $1 -X stuff "$2$NL"
 }
 
+function add_nova_flag {
+    echo "$1" >> $NOVA_DIR/bin/nova.conf
+}
+
 if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
 
-  cat >$NOVA_DIR/bin/nova.conf << NOVA_CONF_EOF
---verbose
---nodaemon
---dhcpbridge_flagfile=$NOVA_DIR/bin/nova.conf
---network_manager=nova.network.manager.$NET_MAN
---my_ip=$HOST_IP
---public_interface=$INTERFACE
---vlan_interface=$INTERFACE
---sql_connection=$SQL_CONN
---auth_driver=nova.auth.$AUTH
---libvirt_type=$LIBVIRT_TYPE
-NOVA_CONF_EOF
+    rm -f $NOVA_DIR/bin/nova.conf
+    
+    add_nova_flag "--verbose"
+    add_nova_flag "--nodaemon"
+    add_nova_flag "--dhcpbridge_flagfile=$NOVA_DIR/bin/nova.conf"
+    add_nova_flag "--network_manager=nova.network.manager.$NET_MAN"
+    add_nova_flag "--my_ip=$HOST_IP"
+    add_nova_flag "--public_interface=$INTERFACE"
+    add_nova_flag "--vlan_interface=$INTERFACE"
+    add_nova_flag "--sql_connection=$SQL_CONN"
+    add_nova_flag "--auth_driver=nova.auth.$AUTH"
+    add_nova_flag "--libvirt_type=$LIBVIRT_TYPE"
 
     if [ -n "$FLAT_INTERFACE" ]; then
-        echo "--flat_interface=$FLAT_INTERFACE" >>$NOVA_DIR/bin/nova.conf
+        add_nova_flag "--flat_interface=$FLAT_INTERFACE"
     fi
 
     if [ "$USE_IPV6" == 1 ]; then
-        echo "--use_ipv6" >>$NOVA_DIR/bin/nova.conf
+        add_nova_flag "--use_ipv6"
     fi
 
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
-        echo "--api_paste_config=$KEYSTONE_DIR/docs/nova-api-paste.ini" >>$NOVA_DIR/bin/nova.conf
+        add_nova_flag "--api_paste_config=$KEYSTONE_DIR/docs/nova-api-paste.ini"
+    fi
+    
+    if [ "$ENABLE_GLANCE" == 1 ]; then
+        add_nova_flag "--image_service=nova.image.glance.GlanceImageService"
     fi
 
-    killall dnsmasq || echo "no dnsmasqs killed"
+    killall dnsmasq || true
     if [ "$USE_IPV6" == 1 ]; then
        killall radvd
     fi
@@ -199,22 +217,11 @@ NOVA_CONF_EOF
     else
         rm -f $NOVA_DIR/nova.sqlite
     fi
-    if [ "$USE_LDAP" == 1 ]; then
-        if [ "$USE_OPENDJ" == 1 ]; then
-            echo '--ldap_user_dn=cn=Directory Manager' >> \
-                /etc/nova/nova-manage.conf
-            sudo $NOVA_DIR/nova/auth/opendj.sh
-        else
-            sudo $NOVA_DIR/nova/auth/slap.sh
-        fi
-    fi
+    
     rm -rf $NOVA_DIR/instances
     mkdir -p $NOVA_DIR/instances
     rm -rf $NOVA_DIR/networks
     mkdir -p $NOVA_DIR/networks
-    if [ ! -d "$NOVA_DIR/images" ]; then
-        ln -s $DIR/images $NOVA_DIR/images
-    fi
 
     if [ "$TEST" == 1 ]; then
         cd $NOVA_DIR
@@ -225,11 +232,21 @@ NOVA_CONF_EOF
     # create the database
     $NOVA_DIR/bin/nova-manage db sync
     if [ "$ENABLE_KEYSTONE" == 0 ]; then
+        if [ "$USE_LDAP" == 1 ]; then
+            if [ "$USE_OPENDJ" == 1 ]; then
+                add_nova_flag "--ldap_user_dn=cn=Directory Manager"
+                $NOVA_DIR/nova/auth/opendj.sh
+            else
+                $NOVA_DIR/nova/auth/slap.sh
+            fi
+        fi
+        
         # create an admin user called 'admin'
         $NOVA_DIR/bin/nova-manage user admin admin admin admin
         # create a project called 'admin' with project manager of 'admin'
         $NOVA_DIR/bin/nova-manage project create admin admin
     else
+        rm -f $KEYSTONE_DIR/keystone/keystone.db
         # add default data
         cd $KEYSTONE_DIR/bin; ./sampledata.sh
     fi
@@ -239,28 +256,36 @@ NOVA_CONF_EOF
     # create some floating ips
     $NOVA_DIR/bin/nova-manage floating create `hostname` $FLOATING_RANGE
 
-    # remove previously converted images
-    rm -rf $DIR/images/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]
-
-    # convert old images
-    $NOVA_DIR/bin/nova-manage image convert $DIR/images
-
     # nova api crashes if we start it with a regular screen command,
     # so send the start command by forcing text into the window.
     screen_it api "$NOVA_DIR/bin/nova-api"
-    screen_it objectstore "$NOVA_DIR/bin/nova-objectstore"
+    if [ "$ENABLE_GLANCE" == 1 ]; then
+        screen_it glance-api "cd $GLANCE_DIR; bin/glance-api --config-file=etc/glance-api.conf"
+        screen_it glance-registry "cd $GLANCE_DIR; bin/glance-registry --config-file=etc/glance-registry.conf"
+    else
+        if [ ! -d "$NOVA_DIR/images" ]; then
+            ln -s $DIR/images $NOVA_DIR/images
+        fi
+        screen_it objectstore "$NOVA_DIR/bin/nova-objectstore"
+    fi
+
+    # remove previously converted images
+    rm -rf $DIR/images/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]
+
+    # convert old images - requires configured imageservice to be running
+    $NOVA_DIR/bin/nova-manage image convert $DIR/images
+
     screen_it compute "$NOVA_DIR/bin/nova-compute"
     screen_it network "$NOVA_DIR/bin/nova-network"
     screen_it scheduler "$NOVA_DIR/bin/nova-scheduler"
-    if [ "$ENABLE_DASH" == 1 ]; then
-        screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:80"
-    fi
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
-        rm -f keystone/keystone/keystone.db
         screen_it keystone "cd $KEYSTONE_DIR/bin; ./keystone"
     fi
     if [ "$ENABLE_VOLUMES" == 1 ]; then
         screen_it volume "$NOVA_DIR/bin/nova-volume"
+    fi
+    if [ "$ENABLE_DASH" == 1 ]; then
+        screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:80"
     fi
     sleep 2
     if [ "$ENABLE_KEYSTONE" == 0 ]; then
@@ -277,14 +302,9 @@ NOVA_CONF_EOF
 fi
 
 if [ "$CMD" == "run" ] || [ "$CMD" == "terminate" ]; then
-    if [ "$ENABLE_KEYSTONE" == 0 ]; then
-        # shutdown instances
-        . $NOVA_DIR/novarc; euca-describe-instances | grep i- | cut -f2 | xargs euca-terminate-instances
-        sleep 2
-        # delete volumes
-        . $NOVA_DIR/novarc; euca-describe-volumes | grep vol- | cut -f2 | xargs -n1 euca-delete-volume
-        sleep 2
-    fi
+    echo "FIXME: shutdown instances"
+    echo "FIXME: delete volumes"
+    echo "FIXME: clean networks?"
 fi
 
 if [ "$CMD" == "run" ] || [ "$CMD" == "clean" ]; then
