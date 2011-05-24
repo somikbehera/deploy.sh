@@ -253,12 +253,6 @@ NOVA_CONF_EOF
     # create some floating ips
     $NOVA_DIR/bin/nova-manage floating create `hostname` $FLOATING_RANGE
 
-    # remove previously converted images
-    rm -rf $DIR/images/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]
-
-    # convert old images
-    $NOVA_DIR/bin/nova-manage image convert $DIR/images
-
     # nova api crashes if we start it with a regular screen command,
     # so send the start command by forcing text into the window.
     screen_it api "$NOVA_DIR/bin/nova-api"
@@ -268,6 +262,13 @@ NOVA_CONF_EOF
     else
         screen_it objectstore "$NOVA_DIR/bin/nova-objectstore"
     fi
+
+    # remove previously converted images
+    rm -rf $DIR/images/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]
+
+    # convert old images - requires configured imageservice to be running
+    $NOVA_DIR/bin/nova-manage image convert $DIR/images
+
     screen_it compute "$NOVA_DIR/bin/nova-compute"
     screen_it network "$NOVA_DIR/bin/nova-network"
     screen_it scheduler "$NOVA_DIR/bin/nova-scheduler"
