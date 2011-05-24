@@ -129,7 +129,7 @@ if [ "$CMD" == "install" ]; then
         pip install -r pip-requires
 
         # allow keystone code to be imported into nova
-        ln -s $KEYSTONE_DIR $NOVA_DIR/keystone
+        ln -s $KEYSTONE_DIR/keystone $NOVA_DIR/keystone
     fi
 
     if [ "$USE_IPV6" == 1 ]; then
