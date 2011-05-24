@@ -34,6 +34,7 @@ There are several options you can specify with environment parameters:
     export USE_GIT=1         # checkout source using github mirror
     export ENABLE_VOLUMES=0  # disable volumes
     export ENABLE_DASH=1     # install & configure dashboard
+    export ENABLE_GLANCE=1   # install & configure glance image service
     export ENABLE_KEYSTONE=1 # install & configure keystone (unified auth)
 
 You can also specify a specific branch by putting lp:~someone/nova/some-branch after the branch command.
