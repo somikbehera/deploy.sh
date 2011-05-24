@@ -264,6 +264,8 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     # so send the start command by forcing text into the window.
     screen_it api "$NOVA_DIR/bin/nova-api"
     if [ "$ENABLE_GLANCE" == 1 ]; then
+        rm -rf /var/lib/glance/images/*
+        rm -f $GLANCE_DIR/glance.sqlite
         screen_it glance-api "cd $GLANCE_DIR; bin/glance-api --config-file=etc/glance-api.conf"
         screen_it glance-registry "cd $GLANCE_DIR; bin/glance-registry --config-file=etc/glance-registry.conf"
     else
