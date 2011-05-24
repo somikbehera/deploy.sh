@@ -170,37 +170,42 @@ function screen_it {
     screen -S nova -p $1 -X stuff "$2$NL"
 }
 
+function add_nova_flag {
+    echo "$1" >> $NOVA_DIR/bin/nova.conf
+}
+
 if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
 
-  cat >$NOVA_DIR/bin/nova.conf << NOVA_CONF_EOF
---verbose
---nodaemon
---dhcpbridge_flagfile=$NOVA_DIR/bin/nova.conf
---network_manager=nova.network.manager.$NET_MAN
---my_ip=$HOST_IP
---public_interface=$INTERFACE
---vlan_interface=$INTERFACE
---sql_connection=$SQL_CONN
---auth_driver=nova.auth.$AUTH
---libvirt_type=$LIBVIRT_TYPE
-NOVA_CONF_EOF
+    rm -f $NOVA_DIR/bin/nova.conf
+    
+    add_nova_flag "--verbose"
+    add_nova_flag "--nodaemon"
+    add_nova_flag "--dhcpbridge_flagfile=$NOVA_DIR/bin/nova.conf"
+    add_nova_flag "--network_manager=nova.network.manager.$NET_MAN"
+    add_nova_flag "--my_ip=$HOST_IP"
+    add_nova_flag "--public_interface=$INTERFACE"
+    add_nova_flag "--vlan_interface=$INTERFACE"
+    add_nova_flag "--sql_connection=$SQL_CONN"
+    add_nova_flag "--auth_driver=nova.auth.$AUTH"
+    add_nova_flag "--libvirt_type=$LIBVIRT_TYPE"
 
     if [ -n "$FLAT_INTERFACE" ]; then
-        echo "--flat_interface=$FLAT_INTERFACE" >> $NOVA_DIR/bin/nova.conf
+        add_nova_flag "--flat_interface=$FLAT_INTERFACE"
     fi
 
     if [ "$USE_IPV6" == 1 ]; then
-        echo "--use_ipv6" >> $NOVA_DIR/bin/nova.conf
+        add_nova_flag "--use_ipv6"
     fi
 
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
-        echo "--api_paste_config=$KEYSTONE_DIR/docs/nova-api-paste.ini" >> $NOVA_DIR/bin/nova.conf
+        add_nova_flag "--api_paste_config=$KEYSTONE_DIR/docs/nova-api-paste.ini"
     fi
+    
     if [ "$ENABLE_GLANCE" == 1 ]; then
-        echo "--image_service=nova.image.glance.GlanceImageService" >> $NOVA_DIR/bin/nova.conf
+        add_nova_flag "--image_service=nova.image.glance.GlanceImageService"
     fi
 
-    killall dnsmasq || echo "no dnsmasqs killed"
+    killall dnsmasq || true
     if [ "$USE_IPV6" == 1 ]; then
        killall radvd
     fi
@@ -212,15 +217,7 @@ NOVA_CONF_EOF
     else
         rm -f $NOVA_DIR/nova.sqlite
     fi
-    if [ "$USE_LDAP" == 1 ]; then
-        if [ "$USE_OPENDJ" == 1 ]; then
-            echo '--ldap_user_dn=cn=Directory Manager' >> \
-                /etc/nova/nova-manage.conf
-            $NOVA_DIR/nova/auth/opendj.sh
-        else
-            $NOVA_DIR/nova/auth/slap.sh
-        fi
-    fi
+    
     rm -rf $NOVA_DIR/instances
     mkdir -p $NOVA_DIR/instances
     rm -rf $NOVA_DIR/networks
@@ -235,6 +232,15 @@ NOVA_CONF_EOF
     # create the database
     $NOVA_DIR/bin/nova-manage db sync
     if [ "$ENABLE_KEYSTONE" == 0 ]; then
+        if [ "$USE_LDAP" == 1 ]; then
+            if [ "$USE_OPENDJ" == 1 ]; then
+                add_nova_flag "--ldap_user_dn=cn=Directory Manager"
+                $NOVA_DIR/nova/auth/opendj.sh
+            else
+                $NOVA_DIR/nova/auth/slap.sh
+            fi
+        fi
+        
         # create an admin user called 'admin'
         $NOVA_DIR/bin/nova-manage user admin admin admin admin
         # create a project called 'admin' with project manager of 'admin'
