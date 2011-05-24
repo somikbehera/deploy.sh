@@ -28,10 +28,13 @@ if [ ! -n "$HOST_IP" ]; then
     HOST_IP=`LC_ALL=C ifconfig  | grep -m 1 'inet addr:'| cut -d: -f2 | awk '{print $1}'`
 fi
 
+# OPENSTACK COMPONENTS
 ENABLE_VOLUMES=${ENABLE_VOLUMES:-1}
 ENABLE_DASH=${ENABLE_DASH:-0}
 ENABLE_KEYSTONE=${ENABLE_KEYSTONE:-0}
 ENABLE_GLANCE=${ENABLE_GLANCE:-0}
+
+# NOVA CONFIGURATION
 USE_MYSQL=${USE_MYSQL:-0}
 INTERFACE=${INTERFACE:-eth0}
 FLOATING_RANGE=${FLOATING_RANGE:-10.6.0.0/27}
@@ -183,18 +186,18 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
 NOVA_CONF_EOF
 
     if [ -n "$FLAT_INTERFACE" ]; then
-        echo "--flat_interface=$FLAT_INTERFACE" >>$NOVA_DIR/bin/nova.conf
+        echo "--flat_interface=$FLAT_INTERFACE" >> $NOVA_DIR/bin/nova.conf
     fi
 
     if [ "$USE_IPV6" == 1 ]; then
-        echo "--use_ipv6" >>$NOVA_DIR/bin/nova.conf
+        echo "--use_ipv6" >> $NOVA_DIR/bin/nova.conf
     fi
 
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
-        echo "--api_paste_config=$KEYSTONE_DIR/docs/nova-api-paste.ini" >>$NOVA_DIR/bin/nova.conf
+        echo "--api_paste_config=$KEYSTONE_DIR/docs/nova-api-paste.ini" >> $NOVA_DIR/bin/nova.conf
     fi
     if [ "$ENABLE_GLANCE" == 1 ]; then
-        echo "--image_service=nova.image.glance.GlanceImageService" >>$NOVA_DIR/bin/nova.conf
+        echo "--image_service=nova.image.glance.GlanceImageService" >> $NOVA_DIR/bin/nova.conf
     fi
 
     killall dnsmasq || echo "no dnsmasqs killed"
@@ -222,9 +225,6 @@ NOVA_CONF_EOF
     mkdir -p $NOVA_DIR/instances
     rm -rf $NOVA_DIR/networks
     mkdir -p $NOVA_DIR/networks
-    if [ ! -d "$NOVA_DIR/images" ]; then
-        ln -s $DIR/images $NOVA_DIR/images
-    fi
 
     if [ "$TEST" == 1 ]; then
         cd $NOVA_DIR
@@ -240,6 +240,7 @@ NOVA_CONF_EOF
         # create a project called 'admin' with project manager of 'admin'
         $NOVA_DIR/bin/nova-manage project create admin admin
     else
+        rm -f $KEYSTONE_DIR/keystone/keystone.db
         # add default data
         cd $KEYSTONE_DIR/bin; ./sampledata.sh
     fi
@@ -256,6 +257,9 @@ NOVA_CONF_EOF
         screen_it glance-api "cd $GLANCE_DIR; bin/glance-api --config-file=etc/glance-api.conf"
         screen_it glance-registry "cd $GLANCE_DIR; bin/glance-registry --config-file=etc/glance-registry.conf"
     else
+        if [ ! -d "$NOVA_DIR/images" ]; then
+            ln -s $DIR/images $NOVA_DIR/images
+        fi
         screen_it objectstore "$NOVA_DIR/bin/nova-objectstore"
     fi
 
@@ -268,15 +272,14 @@ NOVA_CONF_EOF
     screen_it compute "$NOVA_DIR/bin/nova-compute"
     screen_it network "$NOVA_DIR/bin/nova-network"
     screen_it scheduler "$NOVA_DIR/bin/nova-scheduler"
-    if [ "$ENABLE_DASH" == 1 ]; then
-        screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:80"
-    fi
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
-        rm -f keystone/keystone/keystone.db
         screen_it keystone "cd $KEYSTONE_DIR/bin; ./keystone"
     fi
     if [ "$ENABLE_VOLUMES" == 1 ]; then
         screen_it volume "$NOVA_DIR/bin/nova-volume"
+    fi
+    if [ "$ENABLE_DASH" == 1 ]; then
+        screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:80"
     fi
     sleep 2
     if [ "$ENABLE_KEYSTONE" == 0 ]; then
