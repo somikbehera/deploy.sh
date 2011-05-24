@@ -65,12 +65,12 @@ fi
 if [ "$CMD" == "branch" ]; then
     rm -rf $NOVA_DIR
     if [ "$USE_GIT" == 1 ]; then
-        sudo apt-get install -y git-core
+        apt-get install -y git-core
         git clone https://github.com/openstack/nova.git $NOVA_DIR
         cd $NOVA_DIR
         git checkout $SOURCE_BRANCH
     else
-        sudo apt-get install -y bzr
+        apt-get install -y bzr
         if [ ! -e "$DIR/.bzr" ]; then
             bzr init-repo $DIR
         fi
@@ -84,29 +84,25 @@ fi
 
 # You should only have to run this once
 if [ "$CMD" == "install" ]; then
-    sudo apt-get install -y python-software-properties
-    sudo add-apt-repository ppa:nova-core/trunk
-    sudo apt-get update
-    sudo apt-get install -y dnsmasq-base kpartx kvm gawk iptables ebtables
-    sudo apt-get install -y user-mode-linux kvm libvirt-bin
-    sudo apt-get install -y screen vlan curl rabbitmq-server
-    sudo apt-get install -y socat unzip wget psmisc
+    apt-get install -y python-software-properties
+    add-apt-repository ppa:nova-core/trunk
+    apt-get update
+    apt-get install -y dnsmasq-base kpartx kvm gawk iptables ebtables \
+        user-mode-linux kvm libvirt-bin screen vlan curl rabbitmq-server \
+        socat unzip wget psmisc
     if [ "$ENABLE_VOLUMES" == 1 ]; then
-        sudo apt-get install -y lvm2 iscsitarget open-iscsi
-        echo "ISCSITARGET_ENABLE=true" | sudo tee /etc/default/iscsitarget
-        sudo /etc/init.d/iscsitarget restart
+        apt-get install -y lvm2 iscsitarget open-iscsi
+        echo "ISCSITARGET_ENABLE=true" | tee /etc/default/iscsitarget
+        /etc/init.d/iscsitarget restart
     fi
-    sudo modprobe kvm || true
-    sudo /etc/init.d/libvirt-bin restart
-    sudo modprobe nbd || true
-    sudo apt-get install -y python-mox python-ipy python-paste
-    sudo apt-get install -y python-migrate python-gflags python-greenlet
-    sudo apt-get install -y python-libvirt python-libxml2 python-routes
-    sudo apt-get install -y python-netaddr python-pastedeploy
-    sudo apt-get install -y python-eventlet
-    sudo apt-get install -y python-novaclient python-glance python-cheetah
-    sudo apt-get install -y python-carrot python-tempita python-sqlalchemy
-    sudo apt-get install -y python-suds python-lockfile
+    modprobe kvm || true
+    /etc/init.d/libvirt-bin restart
+    modprobe nbd || true
+    apt-get install -y python-mox python-ipy python-paste python-migrate \
+        python-gflags python-greenlet python-libvirt python-libxml2 python-routes \
+        python-netaddr python-pastedeploy python-eventlet python-novaclient \
+        python-glance python-cheetah python-carrot python-tempita \
+        python-sqlalchemy python-suds python-lockfile python-m2crypto python-boto
 
     if [ "$ENABLE_DASH" == 1 ]; then
         apt-get install git-core python-setuptools python-dev -y
@@ -121,17 +117,17 @@ if [ "$CMD" == "install" ]; then
 
     if [ "$ENABLE_GLANCE" == 1 ]; then
         rm -rf $GLANCE_DIR
-        apt-get install -y bzr python-eventlet python-routes python-greenlet 
-        apt-get install -y python-argparse python-sqlalchemy python-wsgiref python-pastedeploy
+        apt-get install -y bzr python-eventlet python-routes python-greenlet \
+            python-argparse python-sqlalchemy python-wsgiref python-pastedeploy
         bzr branch lp:glance $GLANCE_DIR
-        mkdir /var/log/glance
+        mkdir -p /var/log/glance
     fi
 
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
-        apt-get install -y git-core python-setuptools python-dev python-lxml
-        apt-get install -y python-pastescript python-pastedeploy python-paste
-        apt-get install -y sqlite3 python-pysqlite2 python-sqlalchemy python-webob
-        apt-get install -y python-greenlet python-routes
+        apt-get install -y git-core python-setuptools python-dev python-lxml \
+            python-pastescript python-pastedeploy python-paste sqlite3 \
+            python-pysqlite2 python-sqlalchemy python-webob python-greenlet \
+            python-routes
         easy_install pip
         rm -rf $KEYSTONE_DIR
         git clone git://github.com/khussein/keystone.git $KEYSTONE_DIR
@@ -139,13 +135,13 @@ if [ "$CMD" == "install" ]; then
         pip install -r pip-requires
 
         # allow keystone code to be imported into nova
-        ln -s $KEYSTONE_DIR $NOVA_DIR/keystone
+        ln -s $KEYSTONE_DIR/keystone $NOVA_DIR/keystone
     fi
 
     if [ "$USE_IPV6" == 1 ]; then
-        sudo apt-get install -y radvd
-        sudo bash -c "echo 1 > /proc/sys/net/ipv6/conf/all/forwarding"
-        sudo bash -c "echo 0 > /proc/sys/net/ipv6/conf/all/accept_ra"
+        apt-get install -y radvd
+        bash -c "echo 1 > /proc/sys/net/ipv6/conf/all/forwarding"
+        bash -c "echo 0 > /proc/sys/net/ipv6/conf/all/accept_ra"
     fi
 
     if [ "$USE_MYSQL" == 1 ]; then
@@ -154,9 +150,9 @@ mysql-server-5.1 mysql-server/root_password password $MYSQL_PASS
 mysql-server-5.1 mysql-server/root_password_again password $MYSQL_PASS
 mysql-server-5.1 mysql-server/start_on_boot boolean true
 MYSQL_PRESEED
-        sudo apt-get install -y mysql-server python-mysqldb
+        apt-get install -y mysql-server python-mysqldb
     else
-        sudo apt-get install -y sqlite3 python-pysqlite2
+        apt-get install -y sqlite3 python-pysqlite2
     fi
     mkdir -p $DIR/images
     wget -c http://images.ansolabs.com/tty.tgz
@@ -217,9 +213,9 @@ NOVA_CONF_EOF
         if [ "$USE_OPENDJ" == 1 ]; then
             echo '--ldap_user_dn=cn=Directory Manager' >> \
                 /etc/nova/nova-manage.conf
-            sudo $NOVA_DIR/nova/auth/opendj.sh
+            $NOVA_DIR/nova/auth/opendj.sh
         else
-            sudo $NOVA_DIR/nova/auth/slap.sh
+            $NOVA_DIR/nova/auth/slap.sh
         fi
     fi
     rm -rf $NOVA_DIR/instances
