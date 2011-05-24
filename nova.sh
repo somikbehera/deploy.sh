@@ -262,7 +262,7 @@ NOVA_CONF_EOF
     # nova api crashes if we start it with a regular screen command,
     # so send the start command by forcing text into the window.
     screen_it api "$NOVA_DIR/bin/nova-api"
-    if [ "$ENABLE_DASH" == 1 ]; then
+    if [ "$ENABLE_GLANCE" == 1 ]; then
         screen_it glance-api "cd $GLANCE_DIR; bin/glance-api --config-file=etc/glance-api.conf"
         screen_it glance-registry "cd $GLANCE_DIR; bin/glance-registry --config-file=etc/glance-registry.conf"
     else
