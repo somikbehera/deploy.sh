@@ -128,12 +128,8 @@ if [ "$CMD" == "install" ]; then
         cd $KEYSTONE_DIR
         pip install -r pip-requires
 
-        # copy keystone librarys into nova
-        cp $KEYSTONE_DIR/keystone/common/bufferedhttp.py $NOVA_DIR/nova/auth/
-        cp $KEYSTONE_DIR/keystone/auth_protocols/nova_auth_token.py $NOVA_DIR/nova/auth/
-
-        # copy paste config to use nova_auth_token.py
-        cp $KEYSTONE_DIR/docs/nova-api-paste.ini $NOVA_DIR/etc/nova/api-paste.ini
+        # allow keystone code to be imported into nova
+        ln -s $KEYSTONE_DIR $NOVA_DIR/keystone
     fi
 
     if [ "$USE_IPV6" == 1 ]; then
@@ -245,7 +241,11 @@ NOVA_CONF_EOF
 
     # nova api crashes if we start it with a regular screen command,
     # so send the start command by forcing text into the window.
-    screen_it api "$NOVA_DIR/bin/nova-api"
+    if [ "$ENABLE_KEYSTONE" == 1 ]; then
+        screen_it api "$NOVA_DIR/bin/nova-api --api_paste_config=$KEYSTONE_DIR/docs/nova-api-paste.ini"
+    else
+        screen_it api "$NOVA_DIR/bin/nova-api"
+    fi
     screen_it objectstore "$NOVA_DIR/bin/nova-objectstore"
     screen_it compute "$NOVA_DIR/bin/nova-compute"
     screen_it network "$NOVA_DIR/bin/nova-network"
