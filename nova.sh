@@ -18,6 +18,7 @@ fi
 
 NOVA_DIR=$DIR/$DIRNAME
 DASH_DIR=$DIR/dash
+GLANCE_DIR=$DIR/glance
 KEYSTONE_DIR=$DIR/keystone
 
 if [ ! -n "$HOST_IP" ]; then
@@ -30,6 +31,7 @@ fi
 ENABLE_VOLUMES=${ENABLE_VOLUMES:-1}
 ENABLE_DASH=${ENABLE_DASH:-0}
 ENABLE_KEYSTONE=${ENABLE_KEYSTONE:-0}
+ENABLE_GLANCE=${ENABLE_GLANCE:-0}
 USE_MYSQL=${USE_MYSQL:-0}
 INTERFACE=${INTERFACE:-eth0}
 FLOATING_RANGE=${FLOATING_RANGE:-10.6.0.0/27}
@@ -87,7 +89,7 @@ if [ "$CMD" == "install" ]; then
     sudo apt-get update
     sudo apt-get install -y dnsmasq-base kpartx kvm gawk iptables ebtables
     sudo apt-get install -y user-mode-linux kvm libvirt-bin
-    sudo apt-get install -y screen euca2ools vlan curl rabbitmq-server
+    sudo apt-get install -y screen vlan curl rabbitmq-server
     sudo apt-get install -y socat unzip wget psmisc
     if [ "$ENABLE_VOLUMES" == 1 ]; then
         sudo apt-get install -y lvm2 iscsitarget open-iscsi
@@ -117,6 +119,14 @@ if [ "$CMD" == "install" ]; then
         tools/with_venv.sh dashboard/manage.py syncdb
     fi
 
+    if [ "$ENABLE_GLANCE" == 1 ]; then
+        rm -rf $GLANCE_DIR
+        apt-get install -y bzr python-eventlet python-routes python-greenlet 
+        apt-get install -y python-argparse python-sqlalchemy python-wsgiref python-pastedeploy
+        bzr branch lp:glance $GLANCE_DIR
+        mkdir /var/log/glance
+    fi
+
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
         apt-get install -y git-core python-setuptools python-dev python-lxml
         apt-get install -y python-pastescript python-pastedeploy python-paste
@@ -129,7 +139,7 @@ if [ "$CMD" == "install" ]; then
         pip install -r pip-requires
 
         # allow keystone code to be imported into nova
-        ln -s $KEYSTONE_DIR/keystone $NOVA_DIR/keystone
+        ln -s $KEYSTONE_DIR $NOVA_DIR/keystone
     fi
 
     if [ "$USE_IPV6" == 1 ]; then
@@ -186,6 +196,9 @@ NOVA_CONF_EOF
 
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
         echo "--api_paste_config=$KEYSTONE_DIR/docs/nova-api-paste.ini" >>$NOVA_DIR/bin/nova.conf
+    fi
+    if [ "$ENABLE_GLANCE" == 1 ]; then
+        echo "--image_service=nova.image.glance.GlanceImageService" >>$NOVA_DIR/bin/nova.conf
     fi
 
     killall dnsmasq || echo "no dnsmasqs killed"
@@ -249,7 +262,12 @@ NOVA_CONF_EOF
     # nova api crashes if we start it with a regular screen command,
     # so send the start command by forcing text into the window.
     screen_it api "$NOVA_DIR/bin/nova-api"
-    screen_it objectstore "$NOVA_DIR/bin/nova-objectstore"
+    if [ "$ENABLE_DASH" == 1 ]; then
+        screen_it glance-api "cd $GLANCE_DIR; bin/glance-api --config-file=etc/glance-api.conf"
+        screen_it glance-registry "cd $GLANCE_DIR; bin/glance-registry --config-file=etc/glance-registry.conf"
+    else
+        screen_it objectstore "$NOVA_DIR/bin/nova-objectstore"
+    fi
     screen_it compute "$NOVA_DIR/bin/nova-compute"
     screen_it network "$NOVA_DIR/bin/nova-network"
     screen_it scheduler "$NOVA_DIR/bin/nova-scheduler"
@@ -278,14 +296,9 @@ NOVA_CONF_EOF
 fi
 
 if [ "$CMD" == "run" ] || [ "$CMD" == "terminate" ]; then
-    if [ "$ENABLE_KEYSTONE" == 0 ]; then
-        # shutdown instances
-        . $NOVA_DIR/novarc; euca-describe-instances | grep i- | cut -f2 | xargs euca-terminate-instances
-        sleep 2
-        # delete volumes
-        . $NOVA_DIR/novarc; euca-describe-volumes | grep vol- | cut -f2 | xargs -n1 euca-delete-volume
-        sleep 2
-    fi
+    echo "FIXME: shutdown instances"
+    echo "FIXME: delete volumes"
+    echo "FIXME: clean networks?"
 fi
 
 if [ "$CMD" == "run" ] || [ "$CMD" == "clean" ]; then
