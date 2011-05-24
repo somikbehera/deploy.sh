@@ -184,6 +184,10 @@ NOVA_CONF_EOF
         echo "--use_ipv6" >>$NOVA_DIR/bin/nova.conf
     fi
 
+    if [ "$ENABLE_KEYSTONE" == 1 ]; then
+        echo "--api_paste_config=$KEYSTONE_DIR/docs/nova-api-paste.ini" >>$NOVA_DIR/bin/nova.conf
+    fi
+
     killall dnsmasq || echo "no dnsmasqs killed"
     if [ "$USE_IPV6" == 1 ]; then
        killall radvd
@@ -236,24 +240,24 @@ NOVA_CONF_EOF
     # create some floating ips
     $NOVA_DIR/bin/nova-manage floating create `hostname` $FLOATING_RANGE
 
+    # remove previously converted images
+    rm -rf $DIR/images/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]
+
     # convert old images
     $NOVA_DIR/bin/nova-manage image convert $DIR/images
 
     # nova api crashes if we start it with a regular screen command,
     # so send the start command by forcing text into the window.
-    if [ "$ENABLE_KEYSTONE" == 1 ]; then
-        screen_it api "$NOVA_DIR/bin/nova-api --api_paste_config=$KEYSTONE_DIR/docs/nova-api-paste.ini"
-    else
-        screen_it api "$NOVA_DIR/bin/nova-api"
-    fi
+    screen_it api "$NOVA_DIR/bin/nova-api"
     screen_it objectstore "$NOVA_DIR/bin/nova-objectstore"
     screen_it compute "$NOVA_DIR/bin/nova-compute"
     screen_it network "$NOVA_DIR/bin/nova-network"
     screen_it scheduler "$NOVA_DIR/bin/nova-scheduler"
     if [ "$ENABLE_DASH" == 1 ]; then
-        screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver $HOST_IP:80"
+        screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:80"
     fi
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
+        rm -f keystone/keystone/keystone.db
         screen_it keystone "cd $KEYSTONE_DIR/bin; ./keystone"
     fi
     if [ "$ENABLE_VOLUMES" == 1 ]; then
