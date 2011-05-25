@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -o errexit
 
-#apt-get install libvirt0=0.8.3-1ubuntu14.1 libvirt-bin=0.8.3-1ubuntu14.1 python-libvirt=0.8.3-1ubuntu14.1
-apt-get install -y libvirt0 libvirt-bin python-libvirt
-
 curl -O https://github.com/cloudbuilders/deploy.sh/raw/master/nova.sh
 chmod 755 nova.sh
 
@@ -16,4 +13,8 @@ export NET_MAN=FlatDHCPManager
 
 ./nova.sh branch
 ./nova.sh install
+
+# HACK: cloud servers requires older libvirt
+apt-get install -y --force-yes libvirt0=0.8.3-1ubuntu14.1 libvirt-bin=0.8.3-1ubuntu14.1 python-libvirt=0.8.3-1ubuntu14.1
+
 ./nova.sh run_detached
