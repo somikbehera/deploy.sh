@@ -12,6 +12,7 @@ export ENABLE_VOLUMES=0
 export ENABLE_DASH=1
 export ENABLE_GLANCE=1
 export ENABLE_KEYSTONE=1
+export NET_MAN=FlatDHCPManager
 
 ./nova.sh branch
 ./nova.sh install
