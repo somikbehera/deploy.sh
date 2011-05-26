@@ -4,11 +4,17 @@ set -o errexit
 curl -O https://github.com/cloudbuilders/deploy.sh/raw/master/nova.sh
 chmod 755 nova.sh
 
-export USE_GIT=1         # checkout source using github mirror
-export ENABLE_VOLUMES=0  # disable volumes
-export ENABLE_DASH=1     # install & configure dashboard
-export ENABLE_KEYSTONE=1 # install & configure keystone (unified auth)
+export USE_GIT=1
+export ENABLE_VOLUMES=0
+export ENABLE_DASH=1
+export ENABLE_GLANCE=1
+export ENABLE_KEYSTONE=1
+export NET_MAN=FlatDHCPManager
 
 ./nova.sh branch
 ./nova.sh install
-./nova.sh run # FIXME - there is a way to run this in detached mode
+
+# HACK: cloud servers requires older libvirt
+apt-get install -y --force-yes libvirt0=0.8.3-1ubuntu14.1 libvirt-bin=0.8.3-1ubuntu14.1 python-libvirt=0.8.3-1ubuntu14.1
+
+./nova.sh run_detached

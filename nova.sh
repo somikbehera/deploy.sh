@@ -141,7 +141,7 @@ if [ "$CMD" == "install" ]; then
         rm -rf $KEYSTONE_DIR
         git clone git://github.com/khussein/keystone.git $KEYSTONE_DIR
         cd $KEYSTONE_DIR
-        pip install -r pip-requires
+        pip install -r tools/pip-requires
 
         # allow keystone code to be imported into nova
         ln -s $KEYSTONE_DIR/keystone $NOVA_DIR/keystone
@@ -273,6 +273,9 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
         rm -f $GLANCE_DIR/glance.sqlite
         screen_it glance-api "cd $GLANCE_DIR; bin/glance-api --config-file=etc/glance-api.conf"
         screen_it glance-registry "cd $GLANCE_DIR; bin/glance-registry --config-file=etc/glance-registry.conf"
+
+        # wait 10 seconds to let glance launch
+        sleep 10
     else
         if [ ! -d "$NOVA_DIR/images" ]; then
             ln -s $DIR/images $NOVA_DIR/images
