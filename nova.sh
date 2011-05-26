@@ -130,6 +130,10 @@ if [ "$CMD" == "install" ]; then
             python-argparse python-sqlalchemy python-wsgiref python-pastedeploy
         bzr branch lp:glance $GLANCE_DIR
         mkdir -p /var/log/glance
+
+       if [ "$ENABLE_DASH" == 1 ]; then
+           ln -s $GLANCE_DIR/glance $DASH_DIR/openstack-dashboard/dashboard/glance
+       fi
     fi
 
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
