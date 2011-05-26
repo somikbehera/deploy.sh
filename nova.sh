@@ -139,7 +139,7 @@ if [ "$CMD" == "install" ]; then
             python-routes
         easy_install pip
         rm -rf $KEYSTONE_DIR
-        git clone git://github.com/khussein/keystone.git $KEYSTONE_DIR
+        git clone git://github.com/rackspace/keystone.git $KEYSTONE_DIR
         cd $KEYSTONE_DIR
         pip install -r tools/pip-requires
 
