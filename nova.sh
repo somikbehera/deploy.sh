@@ -21,6 +21,7 @@ DASH_DIR=$DIR/dash
 GLANCE_DIR=$DIR/glance
 KEYSTONE_DIR=$DIR/keystone
 API_DIR=$DIR/openstack.api
+NOVNC_DIR=$DIR/noVNC
 
 if [ ! -n "$HOST_IP" ]; then
     # NOTE(vish): This will just get the first ip in the list, so if you
@@ -108,7 +109,9 @@ if [ "$CMD" == "install" ]; then
         python-sqlalchemy python-suds python-lockfile python-m2crypto python-boto
 
     rm -rf $API_DIR
+    rm -rf $NOVNC_DIR
     git clone git://github.com/sleepsonthefloor/openstack.api.git $API_DIR
+    git clone git://github.com/sleepsonthefloor/noVNC.git $NOVNC_DIR
 
     if [ "$ENABLE_DASH" == 1 ]; then
         apt-get install git-core python-setuptools python-dev -y
@@ -192,6 +195,8 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     add_nova_flag "--auth_driver=nova.auth.$AUTH"
     add_nova_flag "--libvirt_type=$LIBVIRT_TYPE"
     add_nova_flag "--osapi_extensions_path=$API_DIR/extensions"
+    add_nova_flag "--vncproxy_url=http://$HOST_IP:6080"
+    add_nova_flag "--vncproxy_wwwroot=$DIR/noVNC"
 
     if [ -n "$FLAT_INTERFACE" ]; then
         add_nova_flag "--flat_interface=$FLAT_INTERFACE"
@@ -293,6 +298,8 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     if [ "$ENABLE_DASH" == 1 ]; then
         screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:80"
     fi
+    sleep 2
+    screen_it vnc "$NOVA_DIR/bin/nova-vncproxy"
     sleep 2
     if [ "$ENABLE_KEYSTONE" == 0 ]; then
         # export environment variables for project 'admin' and user 'admin'
