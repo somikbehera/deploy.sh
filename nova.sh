@@ -138,7 +138,7 @@ if [ "$CMD" == "install" ]; then
         rm -rf $KEYSTONE_DIR
         git clone git://github.com/khussein/keystone.git $KEYSTONE_DIR
         cd $KEYSTONE_DIR
-        pip install -r pip-requires
+        pip install -r tools/pip-requires
 
         # allow keystone code to be imported into nova
         ln -s $KEYSTONE_DIR/keystone $NOVA_DIR/keystone
