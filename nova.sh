@@ -213,7 +213,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     fi
 
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
-        add_nova_flag "--api_paste_config=$KEYSTONE_DIR/docs/nova-api-paste.ini"
+        add_nova_flag "--api_paste_config=$KEYSTONE_DIR/examples/paste/nova-api-paste.ini"
     fi
     
     if [ "$ENABLE_GLANCE" == 1 ]; then
