@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -o errexit
-set -o verbose
+set -o xtrace
 
 DIR=`pwd`
 CMD=$1
