@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -o errexit
+set -o verbose
+
 DIR=`pwd`
 CMD=$1
 
