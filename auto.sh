@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -o errexit
 
-curl -O https://github.com/cloudbuilders/deploy.sh/raw/master/nova.sh
+curl -O https://raw.github.com/cloudbuilders/deploy.sh/master/nova.sh
 chmod 755 nova.sh
 
 export USE_GIT=1
