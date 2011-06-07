@@ -37,6 +37,7 @@ ENABLE_VOLUMES=${ENABLE_VOLUMES:-0}
 ENABLE_DASH=${ENABLE_DASH:-1}
 ENABLE_KEYSTONE=${ENABLE_KEYSTONE:-1}
 ENABLE_GLANCE=${ENABLE_GLANCE:-1}
+ENABLE_APACHE=${ENABLE_APACHE:-1}
 
 # NOVA CONFIGURATION
 USE_MYSQL=${USE_MYSQL:-0}
@@ -124,6 +125,49 @@ if [ "$CMD" == "install" ]; then
         cp local/local_settings.py.example local/local_settings.py
         python tools/install_venv.py
         tools/with_venv.sh dashboard/manage.py syncdb
+        if [ "$ENABLE_APACHE" == 1 ]; then
+            apt-get install -y apache2 libapache2-mod-wsgi
+            mkdir $DASH_DIR/.blackhole
+
+            cat > /opt/dash/openstack-dashboard/dashboard/wsgi/local.wsgi <<EOF
+import sys
+sys.path.append('/opt/dash/openstack-dashboard/.dashboard-venv/lib/python2.6/site-packages/')
+sys.path.append('/opt/dash/openstack-dashboard/')
+sys.path.append('/opt/dash/openstackAPI')
+sys.path.append('/opt/dash/django-nova-syspanel/src')
+sys.path.append('/opt/openstack.api')
+EOF
+            cat /opt/dash/openstack-dashboard/dashboard/wsgi/django.wsgi >> /opt/dash/openstack-dashboard/dashboard/wsgi/local.wsgi
+
+            cat > /etc/apache2/sites-enabled/000-default <<EOF
+<VirtualHost *:80>
+    WSGIScriptAlias / /opt/dash/openstack-dashboard/dashboard/wsgi/local.wsgi
+    WSGIDaemonProcess dashboard user=www-data group=www-data processes=3 threads=10
+    WSGIProcessGroup dashboard
+
+    DocumentRoot /opt/dash/.blackhole/
+    Alias /media /opt/dash/openstack-dashboard/media
+
+    <Directory />
+        Options FollowSymLinks
+        AllowOverride None
+    </Directory>
+
+    <Directory /deploy/>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride None
+        Order allow,deny
+        allow from all
+    </Directory>
+
+    ErrorLog /var/log/apache2/error.log
+    LogLevel warn
+    CustomLog /var/log/apache2/access.log combined
+</VirtualHost>
+EOF
+
+            chown -R www-data:www-data /opt/dash
+        fi
     fi
 
     if [ "$ENABLE_GLANCE" == 1 ]; then
@@ -306,7 +350,12 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
         screen_it volume "$NOVA_DIR/bin/nova-volume"
     fi
     if [ "$ENABLE_DASH" == 1 ]; then
-        screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:80"
+        if [ "$ENABLE_APACHE" == 1 ]; then
+            /etc/init.d/apache2 restart
+            screen_it apache "tail -f /var/log/apache/error.log"
+        else
+            screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:80"
+        fi
     fi
     sleep 2
     screen_it vnc "$NOVA_DIR/bin/nova-vncproxy"
