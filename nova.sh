@@ -352,7 +352,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     if [ "$ENABLE_DASH" == 1 ]; then
         if [ "$ENABLE_APACHE" == 1 ]; then
             /etc/init.d/apache2 restart
-            screen_it apache "tail -f /var/log/apache/error.log"
+            screen_it apache "tail -f /var/log/apache2/error.log"
         else
             screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:80"
         fi
