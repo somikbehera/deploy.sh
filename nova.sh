@@ -129,24 +129,24 @@ if [ "$CMD" == "install" ]; then
             apt-get install -y apache2 libapache2-mod-wsgi
             mkdir $DASH_DIR/.blackhole
 
-            cat > /opt/dash/openstack-dashboard/dashboard/wsgi/local.wsgi <<EOF
+            cat > $DASH_DIR/openstack-dashboard/dashboard/wsgi/local.wsgi <<EOF
 import sys
-sys.path.append('/opt/dash/openstack-dashboard/.dashboard-venv/lib/python2.6/site-packages/')
-sys.path.append('/opt/dash/openstack-dashboard/')
-sys.path.append('/opt/dash/openstackAPI')
-sys.path.append('/opt/dash/django-nova-syspanel/src')
-sys.path.append('/opt/openstack.api')
+sys.path.append('$DASH_DIR/openstack-dashboard/.dashboard-venv/lib/python2.6/site-packages/')
+sys.path.append('$DASH_DIR/openstack-dashboard/')
+sys.path.append('$DASH_DIR/openstackAPI')
+sys.path.append('$DASH_DIR/django-nova-syspanel/src')
+sys.path.append('$DIR/openstack.api')
 EOF
-            cat /opt/dash/openstack-dashboard/dashboard/wsgi/django.wsgi >> /opt/dash/openstack-dashboard/dashboard/wsgi/local.wsgi
+            cat $DASH_DIR/openstack-dashboard/dashboard/wsgi/django.wsgi >> $DASH_DIR/openstack-dashboard/dashboard/wsgi/local.wsgi
 
             cat > /etc/apache2/sites-enabled/000-default <<EOF
 <VirtualHost *:80>
-    WSGIScriptAlias / /opt/dash/openstack-dashboard/dashboard/wsgi/local.wsgi
+    WSGIScriptAlias / $DASH_DIR/openstack-dashboard/dashboard/wsgi/local.wsgi
     WSGIDaemonProcess dashboard user=www-data group=www-data processes=3 threads=10
     WSGIProcessGroup dashboard
 
-    DocumentRoot /opt/dash/.blackhole/
-    Alias /media /opt/dash/openstack-dashboard/media
+    DocumentRoot $DASH_DIR/.blackhole/
+    Alias /media $DASH_DIR/openstack-dashboard/media
 
     <Directory />
         Options FollowSymLinks
@@ -166,7 +166,7 @@ EOF
 </VirtualHost>
 EOF
 
-            chown -R www-data:www-data /opt/dash
+            chown -R www-data:www-data $DASH_DIR
         fi
     fi
 
