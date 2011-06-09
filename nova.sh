@@ -153,7 +153,7 @@ EOF
         AllowOverride None
     </Directory>
 
-    <Directory /deploy/>
+    <Directory $DASH_DIR/>
         Options Indexes FollowSymLinks MultiViews
         AllowOverride None
         Order allow,deny
