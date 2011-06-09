@@ -96,7 +96,8 @@ if [ "$CMD" == "install" ]; then
     add-apt-repository ppa:nova-core/trunk
     apt-get update
     apt-get install -y dnsmasq-base kpartx kvm gawk iptables ebtables wget \
-        kvm libvirt-bin screen vlan curl rabbitmq-server socat unzip psmisc
+        kvm libvirt-bin screen vlan curl rabbitmq-server socat unzip psmisc \
+		sudo
     if [ "$ENABLE_VOLUMES" == 1 ]; then
         apt-get install -y lvm2 iscsitarget open-iscsi
         echo "ISCSITARGET_ENABLE=true" | tee /etc/default/iscsitarget
