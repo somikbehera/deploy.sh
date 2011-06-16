@@ -17,7 +17,7 @@ export NET_MAN=FlatDHCPManager
 
 # HACK: cloud servers requires older libvirt
 if [ ! -z "$CLOUDSERVER" ] ; then
-    apt-get install -y --force-yes libvirt0=0.8.3-1ubuntu14.1 libvirt-bin=0.8.3-1ubuntu14.1 python-libvirt=0.8.3-1ubuntu14.1
+    apt-get install -y --force-yes libvirt0=0.8.3-1ubuntu18 libvirt-bin=0.8.3-1ubuntu18 python-libvirt=0.8.3-1ubuntu18
 fi
 
 ./nova.sh run_detached
