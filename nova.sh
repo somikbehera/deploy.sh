@@ -5,7 +5,7 @@ set -o xtrace
 DIR=`pwd`
 CMD=$1
 
-USE_GIT=${USE_GIT:-0}
+USE_GIT=${USE_GIT:-1}
 
 if [ "$CMD" = "branch" ]; then
     if [ "$USE_GIT" == 1 ]; then
@@ -113,14 +113,14 @@ if [ "$CMD" == "install" ]; then
 
     rm -rf $API_DIR
     rm -rf $NOVNC_DIR
-    git clone git://github.com/cloudbuilders/openstack.api.git $API_DIR
+    git clone git://github.com/cloudbuilders/openstack.api.git -b separate_compute_api $API_DIR
     git clone git://github.com/sleepsonthefloor/noVNC.git $NOVNC_DIR
 
     if [ "$ENABLE_DASH" == 1 ]; then
         apt-get install git-core python-setuptools python-dev -y
         easy_install virtualenv
         rm -rf $DASH_DIR
-        git clone git://github.com/cloudbuilders/openstack.dashboard.git $DASH_DIR
+        git clone git://github.com/cloudbuilders/openstack-dashboard.git -b stacky $DASH_DIR
         cd $DASH_DIR/openstack-dashboard
         cp local/local_settings.py.example local/local_settings.py
         python tools/install_venv.py
