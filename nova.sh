@@ -117,7 +117,7 @@ if [ "$CMD" == "install" ]; then
     git clone git://github.com/sleepsonthefloor/noVNC.git $NOVNC_DIR
 
     if [ "$ENABLE_DASH" == 1 ]; then
-        apt-get install git-core python-setuptools python-dev -y
+        apt-get install bzr git-core python-setuptools python-dev -y
         easy_install virtualenv
         rm -rf $DASH_DIR
         git clone git://github.com/cloudbuilders/openstack-dashboard.git -b stacky $DASH_DIR
