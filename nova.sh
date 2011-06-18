@@ -131,12 +131,13 @@ if [ "$CMD" == "install" ]; then
 
             cat > $DASH_DIR/openstack-dashboard/dashboard/wsgi/local.wsgi <<EOF
 import sys
-sys.path.append('$DASH_DIR/openstack-dashboard/.dashboard-venv/lib/python2.6/site-packages/')
-sys.path.append('$DASH_DIR/openstack-dashboard/.dashboard-venv/lib/python2.7/site-packages/')
-sys.path.append('$DASH_DIR/openstack-dashboard/')
-sys.path.append('$DASH_DIR/openstackAPI')
-sys.path.append('$DASH_DIR/django-nova-syspanel/src')
-sys.path.append('$DIR/openstack.api')
+sys.path.append('/opt/dash/openstack-dashboard/.dashboard-venv/lib/python2.6/site-packages/')
+sys.path.append('/opt/dash/openstack-dashboard/.dashboard-venv/lib/python2.7/site-packages/')
+sys.path.append('/opt/dash/openstack-dashboard/')
+sys.path.append('/opt/dash/django-openstack/src/')
+sys.path.append('/opt/openstack.api')
+sys.path.append('/opt/dash/openstack-dashboard/.dashboard-venv/src/openstack')
+
 EOF
             cat $DASH_DIR/openstack-dashboard/dashboard/wsgi/django.wsgi >> $DASH_DIR/openstack-dashboard/dashboard/wsgi/local.wsgi
 
