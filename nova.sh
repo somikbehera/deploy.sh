@@ -247,6 +247,18 @@ MYSQL_PRESEED
     exit
 fi
 
+# Configure screen
+cat >~/.screenrc <<EOF
+hardstatus on
+hardstatus alwayslastline
+hardstatus string "%{.bW}%-w%{.rW}%n %t%{-}%+w %=%{..G}%H %{..Y}%d/%m %c" 
+
+defscrollback 1024
+
+vbell off
+startup_message off
+EOF
+
 NL=`echo -ne '\015'`
 
 function screen_it {
@@ -349,13 +361,13 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
 
     # nova api crashes if we start it with a regular screen command,
     # so send the start command by forcing text into the window.
-    screen_it api "$NOVA_DIR/bin/nova-api"
+    screen_it n-api "$NOVA_DIR/bin/nova-api"
     if [ "$ENABLE_GLANCE" == 1 ]; then
         rm -rf /var/lib/glance/images/*
         rm -f $GLANCE_DIR/glance.sqlite
-        screen_it glance-api "cd $GLANCE_DIR; bin/glance-api --config-file=etc/glance-api.conf"
+        screen_it g-api "cd $GLANCE_DIR; bin/glance-api --config-file=etc/glance-api.conf"
         sleep 2
-        screen_it glance-registry "cd $GLANCE_DIR; bin/glance-registry --config-file=etc/glance-registry.conf"
+        screen_it g-reg "cd $GLANCE_DIR; bin/glance-registry --config-file=etc/glance-registry.conf"
 
         # wait 10 seconds to let glance launch
         sleep 10
@@ -363,7 +375,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
         if [ ! -d "$NOVA_DIR/images" ]; then
             ln -s $DIR/images $NOVA_DIR/images
         fi
-        screen_it objectstore "$NOVA_DIR/bin/nova-objectstore"
+        screen_it objstore "$NOVA_DIR/bin/nova-objectstore"
     fi
 
     # remove previously converted images
@@ -372,14 +384,14 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     # convert old images - requires configured imageservice to be running
     $NOVA_DIR/bin/nova-manage image convert $DIR/images
 
-    screen_it compute "$NOVA_DIR/bin/nova-compute"
-    screen_it network "$NOVA_DIR/bin/nova-network"
-    screen_it scheduler "$NOVA_DIR/bin/nova-scheduler"
+    screen_it comp "$NOVA_DIR/bin/nova-compute"
+    screen_it net "$NOVA_DIR/bin/nova-network"
+    screen_it sched "$NOVA_DIR/bin/nova-scheduler"
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
-        screen_it keystone "cd $KEYSTONE_DIR/bin; ./keystone"
+        screen_it keyst "cd $KEYSTONE_DIR/bin; ./keystone"
     fi
     if [ "$ENABLE_VOLUMES" == 1 ]; then
-        screen_it volume "$NOVA_DIR/bin/nova-volume"
+        screen_it vol "$NOVA_DIR/bin/nova-volume"
     fi
     if [ "$ENABLE_DASH" == 1 ]; then
         if [ "$ENABLE_APACHE" == 1 ]; then
