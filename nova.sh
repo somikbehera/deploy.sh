@@ -113,7 +113,7 @@ if [ "$CMD" == "install" ]; then
 
     rm -rf $API_DIR
     rm -rf $NOVNC_DIR
-    git clone git://github.com/cloudbuilders/openstack.api.git -b separate_compute_api $API_DIR
+    git clone git://github.com/cloudbuilders/openstack.api.git $API_DIR
     git clone git://github.com/sleepsonthefloor/noVNC.git $NOVNC_DIR
 
     if [ "$ENABLE_DASH" == 1 ]; then
@@ -235,7 +235,7 @@ function add_nova_flag {
 if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
 
     rm -f $NOVA_DIR/bin/nova.conf
-    
+
     add_nova_flag "--verbose"
     add_nova_flag "--nodaemon"
     add_nova_flag "--dhcpbridge_flagfile=$NOVA_DIR/bin/nova.conf"
@@ -261,7 +261,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
         add_nova_flag "--api_paste_config=$KEYSTONE_DIR/examples/paste/nova-api-paste.ini"
     fi
-    
+
     if [ "$ENABLE_GLANCE" == 1 ]; then
         add_nova_flag "--image_service=nova.image.glance.GlanceImageService"
     fi
@@ -278,7 +278,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     else
         rm -f $NOVA_DIR/nova.sqlite
     fi
-    
+
     rm -rf $NOVA_DIR/instances
     mkdir -p $NOVA_DIR/instances
     rm -rf $NOVA_DIR/networks
@@ -301,7 +301,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
                 $NOVA_DIR/nova/auth/slap.sh
             fi
         fi
-        
+
         # create an admin user called 'admin'
         $NOVA_DIR/bin/nova-manage user admin admin admin admin
         # create a project called 'admin' with project manager of 'admin'
