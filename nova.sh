@@ -38,6 +38,7 @@ ENABLE_DASH=${ENABLE_DASH:-1}
 ENABLE_KEYSTONE=${ENABLE_KEYSTONE:-1}
 ENABLE_GLANCE=${ENABLE_GLANCE:-1}
 ENABLE_APACHE=${ENABLE_APACHE:-0}
+ENABLE_SYSLOG=${ENABLE_SYSLOG:-0}
 
 # NOVA CONFIGURATION
 USE_MYSQL=${USE_MYSQL:-0}
@@ -179,9 +180,19 @@ EOF
         bzr branch lp:glance $GLANCE_DIR
         mkdir -p /var/log/glance
 
-       if [ "$ENABLE_DASH" == 1 ]; then
+        if [ "$ENABLE_DASH" == 1 ]; then
            ln -s $GLANCE_DIR/glance $DASH_DIR/openstack-dashboard/dashboard/glance
-       fi
+        fi
+
+        if [ "$ENABLE_SYSLOG" == 1 ]; then
+            sed -e '/^handlers=devel$/s/=devel/=production/' \
+                $GLANCE_DIR/etc/logging.cnf.sample \
+                >$GLANCE_DIR/etc/logging.cnf
+            sed -i -e "/^log_config/d;/^\[DEFAULT\]/a\
+log_config=$GLANCE_DIR/etc/logging.cnf" $GLANCE_DIR/etc/glance-api.conf
+            sed -i -e "/^log_config/d;/^\[DEFAULT\]/a\
+log_config=$GLANCE_DIR/etc/logging.cnf" $GLANCE_DIR/etc/glance-registry.conf
+        fi
     fi
 
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
@@ -197,6 +208,21 @@ EOF
 
         # allow keystone code to be imported into nova
         ln -s $KEYSTONE_DIR/keystone $NOVA_DIR/keystone
+
+        if [ "$ENABLE_SYSLOG" == 1 ]; then
+            sed -i -e '/^handlers=devel$/s/=devel/=production/' \
+                $KEYSTONE_DIR/etc/logging.cnf
+            sed -i -e "/^log_config/d;/^\[DEFAULT\]/a\
+log_config=$KEYSTONE_DIR/etc/logging.cnf" $KEYSTONE_DIR/etc/keystone.conf
+        fi
+    fi
+
+    if [ "$ENABLE_SYSLOG" == 1 ]; then
+        sed -i -e '
+            /ModLoad.*imudp/s/^[#]//
+            /UDPServerRun/s/^[#]//
+        ' /etc/rsyslog.conf
+        /usr/sbin/service rsyslog restart
     fi
 
     if [ "$USE_IPV6" == 1 ]; then
@@ -264,6 +290,10 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     
     if [ "$ENABLE_GLANCE" == 1 ]; then
         add_nova_flag "--image_service=nova.image.glance.GlanceImageService"
+    fi
+
+    if [ "$ENABLE_SYSLOG" == 1 ]; then
+        add_nova_flag "--use_syslog=1"
     fi
 
     killall dnsmasq || true
@@ -389,8 +419,8 @@ fi
 if [ "$CMD" == "scrub" ]; then
     $NOVA_DIR/tools/clean-vlans
     if [ "$LIBVIRT_TYPE" == "uml" ]; then
-        virsh -c uml:///system list | grep i- | awk '{print \$1}' | xargs -n1 virsh -c uml:///system destroy
+        virsh -c uml:///system list | grep i- | awk '{print $1}' | xargs -n1 virsh -c uml:///system destroy
     else
-        virsh list | grep i- | awk '{print \$1}' | xargs -n1 virsh destroy
+        virsh list | grep i- | awk '{print $1}' | xargs -n1 virsh destroy
     fi
 fi
