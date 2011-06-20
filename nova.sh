@@ -121,7 +121,7 @@ if [ "$CMD" == "install" ]; then
         apt-get install bzr git-core python-setuptools python-dev -y
         easy_install virtualenv
         rm -rf $DASH_DIR
-        git clone git://github.com/cloudbuilders/openstack-dashboard.git -b stacky $DASH_DIR
+        git clone git://github.com/cloudbuilders/openstack-dashboard.git $DASH_DIR
         cd $DASH_DIR/openstack-dashboard
         cp local/local_settings.py.example local/local_settings.py
         python tools/install_venv.py
@@ -251,7 +251,7 @@ fi
 cat >~/.screenrc <<EOF
 hardstatus on
 hardstatus alwayslastline
-hardstatus string "%{.bW}%-w%{.rW}%n %t%{-}%+w %=%{..G}%H %{..Y}%d/%m %c" 
+hardstatus string "%{.bW}%-w%{.rW}%n %t%{-}%+w %=%{..G}%H %{..Y}%d/%m %c"
 
 defscrollback 1024
 
