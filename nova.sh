@@ -22,7 +22,7 @@ NOVA_DIR=$DIR/$DIRNAME
 DASH_DIR=$DIR/dash
 GLANCE_DIR=$DIR/glance
 KEYSTONE_DIR=$DIR/keystone
-API_DIR=$DIR/openstack.api
+API_DIR=$DIR/openstackx
 NOVNC_DIR=$DIR/noVNC
 
 if [ ! -n "$HOST_IP" ]; then
@@ -136,7 +136,7 @@ sys.path.append('/opt/dash/openstack-dashboard/.dashboard-venv/lib/python2.6/sit
 sys.path.append('/opt/dash/openstack-dashboard/.dashboard-venv/lib/python2.7/site-packages/')
 sys.path.append('/opt/dash/openstack-dashboard/')
 sys.path.append('/opt/dash/django-openstack/src/')
-sys.path.append('/opt/openstack.api')
+sys.path.append('/opt/openstackx')
 sys.path.append('/opt/dash/openstack-dashboard/.dashboard-venv/src/openstack')
 
 EOF
