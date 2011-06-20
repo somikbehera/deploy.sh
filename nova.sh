@@ -38,6 +38,7 @@ ENABLE_DASH=${ENABLE_DASH:-1}
 ENABLE_KEYSTONE=${ENABLE_KEYSTONE:-1}
 ENABLE_GLANCE=${ENABLE_GLANCE:-1}
 ENABLE_APACHE=${ENABLE_APACHE:-0}
+ENABLE_SYSLOG=${ENABLE_SYSLOG:-0}
 
 # NOVA CONFIGURATION
 USE_MYSQL=${USE_MYSQL:-0}
@@ -179,9 +180,19 @@ EOF
         bzr branch lp:glance $GLANCE_DIR
         mkdir -p /var/log/glance
 
-       if [ "$ENABLE_DASH" == 1 ]; then
+        if [ "$ENABLE_DASH" == 1 ]; then
            ln -s $GLANCE_DIR/glance $DASH_DIR/openstack-dashboard/dashboard/glance
-       fi
+        fi
+
+        if [ "$ENABLE_SYSLOG" == 1 ]; then
+            sed -e '/^handlers=devel$/s/=devel/=production/' \
+                $GLANCE_DIR/etc/logging.cnf.sample \
+                >$GLANCE_DIR/etc/logging.cnf
+            sed -i -e "/^log_config/d;/^\[DEFAULT\]/a\
+log_config=$GLANCE_DIR/etc/logging.cnf" $GLANCE_DIR/etc/glance-api.conf
+            sed -i -e "/^log_config/d;/^\[DEFAULT\]/a\
+log_config=$GLANCE_DIR/etc/logging.cnf" $GLANCE_DIR/etc/glance-registry.conf
+        fi
     fi
 
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
@@ -197,6 +208,21 @@ EOF
 
         # allow keystone code to be imported into nova
         ln -s $KEYSTONE_DIR/keystone $NOVA_DIR/keystone
+
+        if [ "$ENABLE_SYSLOG" == 1 ]; then
+            sed -i -e '/^handlers=devel$/s/=devel/=production/' \
+                $KEYSTONE_DIR/etc/logging.cnf
+            sed -i -e "/^log_config/d;/^\[DEFAULT\]/a\
+log_config=$KEYSTONE_DIR/etc/logging.cnf" $KEYSTONE_DIR/etc/keystone.conf
+        fi
+    fi
+
+    if [ "$ENABLE_SYSLOG" == 1 ]; then
+        sed -i -e '
+            /ModLoad.*imudp/s/^[#]//
+            /UDPServerRun/s/^[#]//
+        ' /etc/rsyslog.conf
+        /usr/sbin/service rsyslog restart
     fi
 
     if [ "$USE_IPV6" == 1 ]; then
@@ -220,6 +246,18 @@ MYSQL_PRESEED
     tar -C $DIR/images -zxf tty.tgz
     exit
 fi
+
+# Configure screen
+cat >~/.screenrc <<EOF
+hardstatus on
+hardstatus alwayslastline
+hardstatus string "%{.bW}%-w%{.rW}%n %t%{-}%+w %=%{..G}%H %{..Y}%d/%m %c" 
+
+defscrollback 1024
+
+vbell off
+startup_message off
+EOF
 
 NL=`echo -ne '\015'`
 
@@ -264,6 +302,10 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
 
     if [ "$ENABLE_GLANCE" == 1 ]; then
         add_nova_flag "--image_service=nova.image.glance.GlanceImageService"
+    fi
+
+    if [ "$ENABLE_SYSLOG" == 1 ]; then
+        add_nova_flag "--use_syslog=1"
     fi
 
     killall dnsmasq || true
@@ -319,13 +361,13 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
 
     # nova api crashes if we start it with a regular screen command,
     # so send the start command by forcing text into the window.
-    screen_it api "$NOVA_DIR/bin/nova-api"
+    screen_it n-api "$NOVA_DIR/bin/nova-api"
     if [ "$ENABLE_GLANCE" == 1 ]; then
         rm -rf /var/lib/glance/images/*
         rm -f $GLANCE_DIR/glance.sqlite
-        screen_it glance-api "cd $GLANCE_DIR; bin/glance-api --config-file=etc/glance-api.conf"
+        screen_it g-api "cd $GLANCE_DIR; bin/glance-api --config-file=etc/glance-api.conf"
         sleep 2
-        screen_it glance-registry "cd $GLANCE_DIR; bin/glance-registry --config-file=etc/glance-registry.conf"
+        screen_it g-reg "cd $GLANCE_DIR; bin/glance-registry --config-file=etc/glance-registry.conf"
 
         # wait 10 seconds to let glance launch
         sleep 10
@@ -333,7 +375,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
         if [ ! -d "$NOVA_DIR/images" ]; then
             ln -s $DIR/images $NOVA_DIR/images
         fi
-        screen_it objectstore "$NOVA_DIR/bin/nova-objectstore"
+        screen_it objstore "$NOVA_DIR/bin/nova-objectstore"
     fi
 
     # remove previously converted images
@@ -342,14 +384,14 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     # convert old images - requires configured imageservice to be running
     $NOVA_DIR/bin/nova-manage image convert $DIR/images
 
-    screen_it compute "$NOVA_DIR/bin/nova-compute"
-    screen_it network "$NOVA_DIR/bin/nova-network"
-    screen_it scheduler "$NOVA_DIR/bin/nova-scheduler"
+    screen_it comp "$NOVA_DIR/bin/nova-compute"
+    screen_it net "$NOVA_DIR/bin/nova-network"
+    screen_it sched "$NOVA_DIR/bin/nova-scheduler"
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
-        screen_it keystone "cd $KEYSTONE_DIR/bin; ./keystone"
+        screen_it keyst "cd $KEYSTONE_DIR/bin; ./keystone"
     fi
     if [ "$ENABLE_VOLUMES" == 1 ]; then
-        screen_it volume "$NOVA_DIR/bin/nova-volume"
+        screen_it vol "$NOVA_DIR/bin/nova-volume"
     fi
     if [ "$ENABLE_DASH" == 1 ]; then
         if [ "$ENABLE_APACHE" == 1 ]; then
@@ -389,8 +431,8 @@ fi
 if [ "$CMD" == "scrub" ]; then
     $NOVA_DIR/tools/clean-vlans
     if [ "$LIBVIRT_TYPE" == "uml" ]; then
-        virsh -c uml:///system list | grep i- | awk '{print \$1}' | xargs -n1 virsh -c uml:///system destroy
+        virsh -c uml:///system list | grep i- | awk '{print $1}' | xargs -n1 virsh -c uml:///system destroy
     else
-        virsh list | grep i- | awk '{print \$1}' | xargs -n1 virsh destroy
+        virsh list | grep i- | awk '{print $1}' | xargs -n1 virsh destroy
     fi
 fi
