@@ -220,8 +220,7 @@ log_config=$KEYSTONE_DIR/etc/logging.cnf" $KEYSTONE_DIR/etc/keystone.conf
     if [ "$ENABLE_SYSLOG" == 1 ]; then
         sed -i -e '
             /ModLoad.*imudp/s/^[#]//
-            /\$InputUDPServerRun/s/^[#]//
-            /\$UDPServerRun/s/^[#]*\$/\$Input/
+            /UDPServerRun/s/^[#]//
         ' /etc/rsyslog.conf
         /usr/sbin/service rsyslog restart
     fi
