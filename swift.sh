@@ -8,8 +8,44 @@ GROUP=root
 DEBIAN_FRONTEND=noninteractive
 SWIFT_HASH=swift-stack3rs
 MY_IP=$(curl -s http://icanhazip.com/)
+USE_RSYSLOG="yes"
 
 export  DEBIAN_FRONTEND LOOPBACK_DISK_SIZE USER GROUP SWIFT_HASH MY_IP
+
+function install_rsyslog() {
+    cat <<EOF>/etc/rsyslog.d/10-swift.conf
+# Uncomment the following to have a log containing all logs together
+#local1,local2,local3,local4,local5.*   /var/log/swift/all.log
+
+# Uncomment the following to have hourly proxy logs for stats processing
+#$template HourlyProxyLog,"/var/log/swift/hourly/%$YEAR%%$MONTH%%$DAY%%$HOUR%"
+#local1.*;local1.!notice ?HourlyProxyLog
+
+local1.*;local1.!notice /var/log/swift/proxy.log
+local1.notice           /var/log/swift/proxy.error
+local1.*                ~
+
+local2.*;local2.!notice /var/log/swift/storage1.log
+local2.notice           /var/log/swift/storage1.error
+local2.*                ~
+
+local3.*;local3.!notice /var/log/swift/storage2.log
+local3.notice           /var/log/swift/storage2.error
+local3.*                ~
+
+local4.*;local4.!notice /var/log/swift/storage3.log
+local4.notice           /var/log/swift/storage3.error
+local4.*                ~
+
+local5.*;local5.!notice /var/log/swift/storage4.log
+local5.notice           /var/log/swift/storage4.error
+local5.*                ~
+EOF
+    sed -i  's/PrivDropToGroup syslog/PrivDropToGroup adm/' /etc/rsyslog.conf
+    mkdir -p /var/log/swift/hourly
+    chown -R syslog.adm /var/log/swift
+    service rsyslog restart
+}
 
 apt-get -y install python-software-properties
 add-apt-repository ppa:swift-core/ppa
@@ -316,6 +352,8 @@ swift-init rest start
 EOF
 
 chmod +x /usr/local/bin/*
+
+[[ ${USE_RSYSLOG,,} == "yes" ]] && install_rsyslog
 
 /usr/local/bin/remakerings
 
