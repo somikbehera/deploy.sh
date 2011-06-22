@@ -114,14 +114,14 @@ if [ "$CMD" == "install" ]; then
 
     rm -rf $API_DIR
     rm -rf $NOVNC_DIR
-    git clone git://github.com/cloudbuilders/openstackx.git $API_DIR
+    git clone git://github.com/cloudbuilders/openstackx.git $API_DIR -b trunk_safe
     git clone git://github.com/sleepsonthefloor/noVNC.git $NOVNC_DIR
 
     if [ "$ENABLE_DASH" == 1 ]; then
         apt-get install bzr git-core python-setuptools python-dev -y
         easy_install virtualenv
         rm -rf $DASH_DIR
-        git clone git://github.com/cloudbuilders/openstack-dashboard.git $DASH_DIR
+        git clone git://github.com/cloudbuilders/openstack-dashboard.git $DASH_DIR -b trunk_safe
         cd $DASH_DIR/openstack-dashboard
         cp local/local_settings.py.example local/local_settings.py
         python tools/install_venv.py
@@ -202,7 +202,7 @@ log_config=$GLANCE_DIR/etc/logging.cnf" $GLANCE_DIR/etc/glance-registry.conf
             python-routes
         easy_install pip
         rm -rf $KEYSTONE_DIR
-        git clone git://github.com/rackspace/keystone.git $KEYSTONE_DIR
+        git clone git://github.com/cloudbuilders/keystone.git $KEYSTONE_DIR -b trunk_safe
         cd $KEYSTONE_DIR
         pip install -r tools/pip-requires
 
@@ -349,7 +349,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
         # create a project called 'admin' with project manager of 'admin'
         $NOVA_DIR/bin/nova-manage project create admin admin
     else
-        rm -f $KEYSTONE_DIR/keystone/keystone.db
+        rm -f $KEYSTONE_DIR/bin/keystone.db
         # add default data
         cd $KEYSTONE_DIR/bin; ./sampledata.sh
     fi
