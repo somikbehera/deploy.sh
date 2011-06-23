@@ -188,10 +188,6 @@ EOF
             sed -e '/^handlers=devel$/s/=devel/=production/' \
                 $GLANCE_DIR/etc/logging.cnf.sample \
                 >$GLANCE_DIR/etc/logging.cnf
-            sed -i -e "/^log_config/d;/^\[DEFAULT\]/a\
-log_config=$GLANCE_DIR/etc/logging.cnf" $GLANCE_DIR/etc/glance-api.conf
-            sed -i -e "/^log_config/d;/^\[DEFAULT\]/a\
-log_config=$GLANCE_DIR/etc/logging.cnf" $GLANCE_DIR/etc/glance-registry.conf
         fi
     fi
 
@@ -212,8 +208,6 @@ log_config=$GLANCE_DIR/etc/logging.cnf" $GLANCE_DIR/etc/glance-registry.conf
         if [ "$ENABLE_SYSLOG" == 1 ]; then
             sed -i -e '/^handlers=devel$/s/=devel/=production/' \
                 $KEYSTONE_DIR/etc/logging.cnf
-            sed -i -e "/^log_config/d;/^\[DEFAULT\]/a\
-log_config=$KEYSTONE_DIR/etc/logging.cnf" $KEYSTONE_DIR/etc/keystone.conf
         fi
     fi
 
@@ -365,9 +359,13 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     if [ "$ENABLE_GLANCE" == 1 ]; then
         rm -rf /var/lib/glance/images/*
         rm -f $GLANCE_DIR/glance.sqlite
-        screen_it g-api "cd $GLANCE_DIR; bin/glance-api --config-file=etc/glance-api.conf"
+        LOG_ARG=""
+        if [ "$ENABLE_SYSLOG" == 1 ]; then
+            LOG_ARG="--log-config $GLANCE_DIR/etc/logging.cnf"
+        fi
+        screen_it g-api "cd $GLANCE_DIR; bin/glance-api --config-file=etc/glance-api.conf $LOG_ARG"
         sleep 2
-        screen_it g-reg "cd $GLANCE_DIR; bin/glance-registry --config-file=etc/glance-registry.conf"
+        screen_it g-reg "cd $GLANCE_DIR; bin/glance-registry --config-file=etc/glance-registry.conf $LOG_ARG"
 
         # wait 10 seconds to let glance launch
         sleep 10
@@ -388,7 +386,11 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     screen_it net "$NOVA_DIR/bin/nova-network"
     screen_it sched "$NOVA_DIR/bin/nova-scheduler"
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
-        screen_it keyst "cd $KEYSTONE_DIR/bin; ./keystone"
+        LOG_ARG=""
+        if [ "$ENABLE_SYSLOG" == 1 ]; then
+            LOG_ARG="--log-config $KEYSTONE_DIR/etc/logging.cnf"
+        fi
+        screen_it keyst "cd $KEYSTONE_DIR/bin; ./keystone --config-file $KEYSTONE_DIR/etc/keystone.conf $LOG_ARG"
     fi
     if [ "$ENABLE_VOLUMES" == 1 ]; then
         screen_it vol "$NOVA_DIR/bin/nova-volume"
