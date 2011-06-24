@@ -135,7 +135,7 @@ import sys
 sys.path.append('/opt/dash/openstack-dashboard/.dashboard-venv/lib/python2.6/site-packages/')
 sys.path.append('/opt/dash/openstack-dashboard/.dashboard-venv/lib/python2.7/site-packages/')
 sys.path.append('/opt/dash/openstack-dashboard/')
-sys.path.append('/opt/dash/django-openstack/src/')
+sys.path.append('/opt/dash/django-openstack/')
 sys.path.append('/opt/openstackx')
 sys.path.append('/opt/dash/openstack-dashboard/.dashboard-venv/src/openstack')
 
