@@ -23,7 +23,7 @@ namespace :puppet do
   
   desc "run puppet on hosts"
   task :kick, :roles => [:cpu, :infra] do
-    run "sudo puppetd -t"
+    sudo "puppetd -t"
   end
   
   desc "pull and kick"
