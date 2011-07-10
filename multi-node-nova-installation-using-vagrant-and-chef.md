@@ -64,7 +64,7 @@ _Prerelease version no longer necessary. The current version of vagrant (0.7.2) 
 
 ### Get and run the chef-server Vagrantfile
 
-    curl -o Vagrantfile https://gist.github.com/raw/786945/server.rb
+    curl -o Vagrantfile https://raw.github.com/gist/786945/server.rb
     # the chef server takes two runs to provision properly
     vagrant up chef; vagrant provision chef; vagrant up
 
