@@ -67,7 +67,7 @@ _Prerelease version no longer necessary. The current version of vagrant (0.7.2) 
 
 Provisioning for vagrant can use chef-solo, chef-server, or puppet.  We're going to use chef-solo for the installation of nova.
 
-    curl -o Vagrantfile https://gist.github.com/raw/786945/solo.rb
+    curl -o Vagrantfile https://raw.github.com/gist/786945/solo.rb
 
 ### Running nova
 
