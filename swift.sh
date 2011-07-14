@@ -13,6 +13,7 @@ USE_RSYSLOG="yes"
 export  DEBIAN_FRONTEND LOOPBACK_DISK_SIZE USER GROUP SWIFT_HASH MY_IP
 
 function install_rsyslog() {
+    apt-get -y install rsyslog
     cat <<EOF>/etc/rsyslog.d/10-swift.conf
 # Uncomment the following to have a log containing all logs together
 #local1,local2,local3,local4,local5.*   /var/log/swift/all.log
