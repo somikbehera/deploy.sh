@@ -348,10 +348,10 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
         cd $KEYSTONE_DIR/bin; ./sampledata.sh
     fi
     # create a small network
-    $NOVA_DIR/bin/nova-manage network create $FIXED_RANGE 1 32
+    $NOVA_DIR/bin/nova-manage network create public $FIXED_RANGE 1 32
 
     # create some floating ips
-    $NOVA_DIR/bin/nova-manage floating create `hostname` $FLOATING_RANGE
+    $NOVA_DIR/bin/nova-manage floating create $FLOATING_RANGE
 
     # nova api crashes if we start it with a regular screen command,
     # so send the start command by forcing text into the window.
