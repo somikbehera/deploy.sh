@@ -198,7 +198,7 @@ EOF
             python-routes
         easy_install pip
         rm -rf $KEYSTONE_DIR
-        git clone git://github.com/cloudbuilders/keystone.git $KEYSTONE_DIR -b trunk_safe
+        git clone https://github.com/rackspace/keystone.git $KEYSTONE_DIR
         cd $KEYSTONE_DIR
         pip install -r tools/pip-requires
 
