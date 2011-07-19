@@ -121,7 +121,7 @@ if [ "$CMD" == "install" ]; then
         apt-get install bzr git-core python-setuptools python-dev -y
         easy_install virtualenv
         rm -rf $DASH_DIR
-        git clone git://github.com/cloudbuilders/openstack-dashboard.git $DASH_DIR
+        git clone git://github.com/cloudbuilders/openstack-dashboard.git $DASH_DIR -b master_cb_merge_passing_tests
         cd $DASH_DIR/openstack-dashboard
         cp local/local_settings.py.example local/local_settings.py
         python tools/install_venv.py
@@ -195,7 +195,7 @@ EOF
         apt-get install -y git-core python-setuptools python-dev python-lxml \
             python-pastescript python-pastedeploy python-paste sqlite3 \
             python-pysqlite2 python-sqlalchemy python-webob python-greenlet \
-            python-routes
+            python-routes libldap2-dev libsasl2-dev
         easy_install pip
         rm -rf $KEYSTONE_DIR
         git clone https://github.com/rackspace/keystone.git $KEYSTONE_DIR
