@@ -2,7 +2,8 @@
 set -o errexit
 
 NOVASCRIPT=${NOVASCRIPT:-nova.sh}
-curl -O https://raw.github.com/cloudbuilders/deploy.sh/master/$NOVASCRIPT
+BASEURL=${BASEURL:-https://raw.github.com/cloudbuilders/deploy.sh/master/}
+curl -O $BASEURL/$NOVASCRIPT
 chmod 755 $NOVASCRIPT
 
 export USE_GIT=1
