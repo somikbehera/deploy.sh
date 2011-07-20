@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -o errexit
 
-NOVASCRIPT=${NOVASCRIPT:-nova.sh}
-BASEURL=${BASEURL:-https://raw.github.com/cloudbuilders/deploy.sh/master/}
-curl -O $BASEURL/$NOVASCRIPT
+NOVASCRIPTURL=${NOVASCRIPTURL:-https://raw.github.com/cloudbuilders/deploy.sh/master/nova.sh}
+curl -O $NOVASCRIPTURL
+
+NOVASCRIPT="$(echo -n $NOVASCRIPTURL | sed -e 's/.*\///')"
 chmod 755 $NOVASCRIPT
 
 export USE_GIT=1
