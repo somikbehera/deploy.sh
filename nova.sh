@@ -280,7 +280,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     add_nova_flag "--libvirt_type=$LIBVIRT_TYPE"
     add_nova_flag "--osapi_extensions_path=$API_DIR/extensions"
     add_nova_flag "--vncproxy_url=http://$HOST_IP:6080"
-    add_nova_flag "--vncproxy_wwwroot=$DIR/noVNC"
+    add_nova_flag "--vncproxy_wwwroot=$DIR/noVNC/noVNC"
 
     if [ -n "$FLAT_INTERFACE" ]; then
         add_nova_flag "--flat_interface=$FLAT_INTERFACE"
