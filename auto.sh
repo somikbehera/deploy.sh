@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -o errexit
 
-NOVASCRIPT=${NOVASCRIPT:nova.sh}
+NOVASCRIPT=${NOVASCRIPT:-nova.sh}
 curl -O https://raw.github.com/cloudbuilders/deploy.sh/master/$NOVASCRIPT
 chmod 755 $NOVASCRIPT
 
