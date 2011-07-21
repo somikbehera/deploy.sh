@@ -344,6 +344,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
         $NOVA_DIR/bin/nova-manage project create admin admin
     else
         rm -f $KEYSTONE_DIR/bin/keystone.db
+        rm -f $KEYSTONE_DIR/bin/keystone.token.db
         # add default data
         cd $KEYSTONE_DIR/bin; ./sampledata.sh
     fi
