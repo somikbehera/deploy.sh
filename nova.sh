@@ -176,7 +176,8 @@ EOF
     if [ "$ENABLE_GLANCE" == 1 ]; then
         rm -rf $GLANCE_DIR
         apt-get install -y bzr python-eventlet python-routes python-greenlet \
-            python-argparse python-sqlalchemy python-wsgiref python-pastedeploy
+            python-argparse python-sqlalchemy python-wsgiref \
+            python-pastedeploy python-xattr
         bzr branch lp:glance $GLANCE_DIR
         mkdir -p /var/log/glance
 
