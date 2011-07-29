@@ -22,7 +22,7 @@ Prerequisites: curl & sudo
 
 Then, get nova.sh
 
-    curl -O https://github.com/cloudbuilders/deploy.sh/raw/master/nova.sh
+    curl -LO https://github.com/cloudbuilders/deploy.sh/raw/master/nova.sh
     chmod 755 nova.sh
 
 ### Usage
