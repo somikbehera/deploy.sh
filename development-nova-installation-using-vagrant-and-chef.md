@@ -73,7 +73,7 @@ If you want to run the tests on OSX Lion, you can get there using this section. 
 
 ### Get Vagrant
 
-_Prerelease version no longer necessary. The current version of vagrant (0.7.2) works fine._
+_Prerelease version no longer necessary. The current version of vagrant (0.8) works fine._
 
 #### OSX
 
