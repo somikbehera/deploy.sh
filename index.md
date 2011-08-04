@@ -7,6 +7,7 @@ layout: default
 
 ## documents
 
+ * [development nova installation using vagrant and chef](development-nova-installation-using-vagrant-and-chef.html)
  * [hacking nova](hacking-nova.html)
  * [hacking inside lxc](nova-development-in-lxc.html)
  * [single node nova installation using vagrant and chef](single-node-nova-installation-using-vagrant-and-chef.html)
