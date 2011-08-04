@@ -3,7 +3,7 @@ title: single node nova installation using vagrant and chef
 layout: default
 ---
 
-Integration testing for distributed systems that have many dependencies can be a huge challenge.  Ideally, you would have a cluster of machines that you could PXE boot to a base os install and run a complete install of the system.  Unfortunately not everyone has a bunch of extra hardware sitting around.  For those of us that are a bit on the frugal side, a whole lot of testing can be done with Virtual Machines.  Read on for a simple guide to installing Nova with VirtualBox and Vagrant.
+Development for Nova can be challenging. While the unit tests will all run fine on OSX or Linux, you need a linux box to actually run the entire system. Also, since nova messes with network configurations, it is usally safer to run the system in a virtual machine that you can blow away when needed. This guide will get you running nova from a trunk source checkout inside of a vm.
 
 ###Installing VirtualBox
 
@@ -139,11 +139,13 @@ This script uses github.com/vishvananda/novascript which runs all of the nova wo
 
     sudo screen -x
 
-The source code is in /tmp/bzr/nova
+The source code is in /tmp/bzr/nova, but /tmp/bzr is a shared folder with the host machine that is the same as ~/bzr. Be careful about developing inside the bzr/nova directory as it will be deleted and recreated if you destroy and recreate the vm. You can create other branches in /tmp/bzr/ and they will be mirrored in ~/bzr/ on your host. That means you can edit files using your favorite editor on your host machine.
 
-When you are finished, you can destroy the entire system with vagrant destroy. You can also leave the box running and use it again later.
+If you don't want to keep the machine running for later use, you can always destroy the entire system with vagrant destroy.
 
     vagrant destroy
+
+You can always recreate the vm with another `vagrant up`. Packages and such are cached locally, so installation generally goes very quickly the second time.  On my machine it usually runs in less than four minutes.
 
 ### Running a different branch
 
