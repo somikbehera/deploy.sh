@@ -199,7 +199,7 @@ EOF
             python-routes libldap2-dev libsasl2-dev
         easy_install pip
         rm -rf $KEYSTONE_DIR
-        git clone https://github.com/rackspace/keystone.git $KEYSTONE_DIR
+        git clone https://github.com/openstack/keystone.git $KEYSTONE_DIR
         cd $KEYSTONE_DIR
         pip install -r tools/pip-requires
 
