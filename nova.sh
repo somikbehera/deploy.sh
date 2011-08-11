@@ -22,6 +22,7 @@ NOVA_DIR=$DIR/$DIRNAME
 DASH_DIR=$DIR/dash
 GLANCE_DIR=$DIR/glance
 KEYSTONE_DIR=$DIR/keystone
+NOVACLIENT_DIR=$DIR/python-novaclient
 API_DIR=$DIR/openstackx
 NOVNC_DIR=$DIR/noVNC
 
@@ -39,6 +40,7 @@ ENABLE_KEYSTONE=${ENABLE_KEYSTONE:-1}
 ENABLE_GLANCE=${ENABLE_GLANCE:-1}
 ENABLE_APACHE=${ENABLE_APACHE:-0}
 ENABLE_SYSLOG=${ENABLE_SYSLOG:-0}
+ENABLE_NOVACLIENT=${ENABLE_NOVACLIENT:-1}
 
 # NOVA CONFIGURATION
 USE_MYSQL=${USE_MYSQL:-0}
@@ -101,7 +103,7 @@ if [ "$CMD" == "install" ]; then
     sudo add-apt-repository ppa:nova-core/trunk
     sudo apt-get update
     sudo apt-get install -y dnsmasq-base kpartx kvm gawk iptables ebtables wget sudo \
-        kvm libvirt-bin screen vlan curl rabbitmq-server socat unzip psmisc
+        kvm libvirt-bin screen vlan curl rabbitmq-server socat unzip psmisc euca2ools
     if [ "$ENABLE_VOLUMES" == 1 ]; then
         sudo apt-get install -y lvm2 iscsitarget open-iscsi
         echo "ISCSITARGET_ENABLE=true" | sudo tee /etc/default/iscsitarget
@@ -208,6 +210,13 @@ EOF
             sed -i -e '/^handlers=devel$/s/=devel/=production/' \
                 $KEYSTONE_DIR/etc/logging.cnf
         fi
+    fi
+
+    if [ "$ENABLE_NOVACLIENT" == 1 ]; then
+        rm -rf $NOVACLIENT_DIR
+        git clone https://github.com/openstack/keystone.git $NOVACLIENT_DIR
+        cd $NOVACLIENT_DIR
+        sudo python setup.py develop
     fi
 
     if [ "$ENABLE_SYSLOG" == 1 ]; then
@@ -406,14 +415,10 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     sleep 2
     screen_it vnc "$NOVA_DIR/bin/nova-vncproxy"
     sleep 2
-    if [ "$ENABLE_KEYSTONE" == 0 ]; then
-        # export environment variables for project 'admin' and user 'admin'
-        $NOVA_DIR/bin/nova-manage project zipfile admin admin $NOVA_DIR/nova.zip
-        unzip -o $NOVA_DIR/nova.zip -d $NOVA_DIR/
-        screen_it test "export PATH=$NOVA_DIR/bin:$PATH;. $NOVA_DIR/novarc"
-    else
-        screen_it test "echo 'no openstack cli automation yet'"
-    fi
+    # export environment variables for project 'admin' and user 'admin'
+    $NOVA_DIR/bin/nova-manage project zipfile admin admin $NOVA_DIR/nova.zip
+    unzip -o $NOVA_DIR/nova.zip -d $NOVA_DIR/
+    screen_it test "export PATH=$NOVA_DIR/bin:$PATH;. $NOVA_DIR/novarc"
     if [ "$CMD" != "run_detached" ]; then
       screen -S nova -x
     fi
