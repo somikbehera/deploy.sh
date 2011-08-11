@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+API_DIR=$DIR/openstackx
 set -o errexit
 set -o xtrace
 
@@ -214,7 +215,7 @@ EOF
 
     if [ "$ENABLE_NOVACLIENT" == 1 ]; then
         rm -rf $NOVACLIENT_DIR
-        git clone https://github.com/openstack/keystone.git $NOVACLIENT_DIR
+        git clone https://github.com/rackspace/python-novaclient.git $NOVACLIENT_DIR
         cd $NOVACLIENT_DIR
         sudo python setup.py develop
     fi
