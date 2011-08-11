@@ -88,6 +88,10 @@ if [ "$CMD" == "branch" ]; then
     fi
     mkdir -p $NOVA_DIR/instances
     mkdir -p $NOVA_DIR/networks
+    if [ "$ENABLE_KEYSTONE" == 1 ]; then
+        # allow keystone code to be imported into nova
+        ln -s $KEYSTONE_DIR/keystone $NOVA_DIR/keystone
+    fi
     exit
 fi
 
@@ -199,9 +203,6 @@ EOF
             python-routes libldap2-dev libsasl2-dev
         rm -rf $KEYSTONE_DIR
         git clone https://github.com/openstack/keystone.git $KEYSTONE_DIR
-
-        # allow keystone code to be imported into nova
-        ln -s $KEYSTONE_DIR/keystone $NOVA_DIR/keystone
 
         if [ "$ENABLE_SYSLOG" == 1 ]; then
             sed -i -e '/^handlers=devel$/s/=devel/=production/' \
