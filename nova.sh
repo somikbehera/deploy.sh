@@ -94,7 +94,7 @@ fi
 # You should only have to run this once
 if [ "$CMD" == "install" ]; then
     sudo apt-get install -y python-software-properties
-    add-apt-repository ppa:nova-core/trunk
+    sudo add-apt-repository ppa:nova-core/trunk
     sudo apt-get update
     sudo apt-get install -y dnsmasq-base kpartx kvm gawk iptables ebtables wget sudo \
         kvm libvirt-bin screen vlan curl rabbitmq-server socat unzip psmisc
