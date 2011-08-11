@@ -347,16 +347,16 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
             fi
         fi
 
-        # create an admin user called 'admin'
-        $NOVA_DIR/bin/nova-manage user admin admin admin admin
-        # create a project called 'admin' with project manager of 'admin'
-        $NOVA_DIR/bin/nova-manage project create admin admin
     else
         rm -f $KEYSTONE_DIR/bin/keystone.db
         rm -f $KEYSTONE_DIR/bin/keystone.token.db
         # add default data
         cd $KEYSTONE_DIR/bin; ./sampledata.sh
     fi
+    # create an admin user called 'admin'
+    $NOVA_DIR/bin/nova-manage user admin admin admin admin
+    # create a project called 'admin' with project manager of 'admin'
+    $NOVA_DIR/bin/nova-manage project create 1234 admin
     # create a small network
     $NOVA_DIR/bin/nova-manage network create private $FIXED_RANGE 1 32
 
