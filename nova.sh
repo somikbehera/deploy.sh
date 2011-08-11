@@ -351,12 +351,14 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
         rm -f $KEYSTONE_DIR/bin/keystone.db
         rm -f $KEYSTONE_DIR/bin/keystone.token.db
         # add default data
-        cd $KEYSTONE_DIR/bin; ./sampledata.sh
+
+        curl -OL https://raw.github.com/cloudbuilders/deploy.sh/master/initial_data.sh
+        BIN_DIR=$KEYSTONE_DIR/bin ./initial_data.sh
     fi
     # create an admin user called 'admin'
     $NOVA_DIR/bin/nova-manage user admin admin admin admin
     # create a project called 'admin' with project manager of 'admin'
-    $NOVA_DIR/bin/nova-manage project create 1234 admin
+    $NOVA_DIR/bin/nova-manage project create admin admin
     # create a small network
     $NOVA_DIR/bin/nova-manage network create private $FIXED_RANGE 1 32
 
@@ -417,7 +419,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     screen_it vnc "$NOVA_DIR/bin/nova-vncproxy"
     sleep 2
     # export environment variables for project 'admin' and user 'admin'
-    $NOVA_DIR/bin/nova-manage project zipfile 1234 admin $NOVA_DIR/nova.zip
+    $NOVA_DIR/bin/nova-manage project zipfile admin admin $NOVA_DIR/nova.zip
     unzip -o $NOVA_DIR/nova.zip -d $NOVA_DIR/
     screen_it test "export PATH=$NOVA_DIR/bin:$PATH;. $NOVA_DIR/novarc"
     if [ "$CMD" != "run_detached" ]; then
