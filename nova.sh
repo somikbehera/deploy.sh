@@ -74,12 +74,12 @@ fi
 if [ "$CMD" == "branch" ]; then
     rm -rf $NOVA_DIR
     if [ "$USE_GIT" == 1 ]; then
-        apt-get install -y git-core
+        sudo apt-get install -y git-core
         git clone https://github.com/openstack/nova.git $NOVA_DIR
         cd $NOVA_DIR
         git checkout $SOURCE_BRANCH
     else
-        apt-get install -y bzr
+        sudo apt-get install -y bzr
         if [ ! -e "$DIR/.bzr" ]; then
             bzr init-repo $DIR
         fi
@@ -93,20 +93,20 @@ fi
 
 # You should only have to run this once
 if [ "$CMD" == "install" ]; then
-    apt-get install -y python-software-properties
+    sudo apt-get install -y python-software-properties
     add-apt-repository ppa:nova-core/trunk
-    apt-get update
-    apt-get install -y dnsmasq-base kpartx kvm gawk iptables ebtables wget sudo \
+    sudo apt-get update
+    sudo apt-get install -y dnsmasq-base kpartx kvm gawk iptables ebtables wget sudo \
         kvm libvirt-bin screen vlan curl rabbitmq-server socat unzip psmisc
     if [ "$ENABLE_VOLUMES" == 1 ]; then
-        apt-get install -y lvm2 iscsitarget open-iscsi
-        echo "ISCSITARGET_ENABLE=true" | tee /etc/default/iscsitarget
-        /etc/init.d/iscsitarget restart
+        sudo apt-get install -y lvm2 iscsitarget open-iscsi
+        echo "ISCSITARGET_ENABLE=true" | sudo tee /etc/default/iscsitarget
+        sudo /etc/init.d/iscsitarget restart
     fi
-    modprobe kvm || true
-    /etc/init.d/libvirt-bin restart
-    modprobe nbd || true
-    apt-get install -y python-mox python-ipy python-paste python-migrate \
+    sudo modprobe kvm || true
+    sudo /etc/init.d/libvirt-bin restart
+    sudo modprobe nbd || true
+    sudo apt-get install -y python-mox python-ipy python-paste python-migrate \
         python-gflags python-greenlet python-libvirt python-libxml2 python-routes \
         python-netaddr python-pastedeploy python-eventlet python-novaclient \
         python-glance python-cheetah python-carrot python-tempita \
@@ -118,8 +118,8 @@ if [ "$CMD" == "install" ]; then
     git clone git://github.com/sleepsonthefloor/noVNC.git $NOVNC_DIR
 
     if [ "$ENABLE_DASH" == 1 ]; then
-        apt-get install bzr git-core python-setuptools python-dev -y
-        easy_install virtualenv
+        sudo apt-get install bzr git-core python-setuptools python-dev -y
+        sudo easy_install virtualenv
         rm -rf $DASH_DIR
         git clone git://github.com/cloudbuilders/openstack-dashboard.git $DASH_DIR
         cd $DASH_DIR/openstack-dashboard
@@ -127,7 +127,7 @@ if [ "$CMD" == "install" ]; then
         python tools/install_venv.py
         tools/with_venv.sh dashboard/manage.py syncdb
         if [ "$ENABLE_APACHE" == 1 ]; then
-            apt-get install -y apache2 libapache2-mod-wsgi
+            sudo apt-get install -y apache2 libapache2-mod-wsgi
             mkdir $DASH_DIR/.blackhole
 
             cat > $DASH_DIR/openstack-dashboard/dashboard/wsgi/local.wsgi <<EOF
@@ -175,7 +175,7 @@ EOF
 
     if [ "$ENABLE_GLANCE" == 1 ]; then
         rm -rf $GLANCE_DIR
-        apt-get install -y bzr python-eventlet python-routes python-greenlet \
+        sudo apt-get install -y bzr python-eventlet python-routes python-greenlet \
             python-argparse python-sqlalchemy python-wsgiref \
             python-pastedeploy python-xattr
         bzr branch lp:glance $GLANCE_DIR
@@ -193,7 +193,7 @@ EOF
     fi
 
     if [ "$ENABLE_KEYSTONE" == 1 ]; then
-        apt-get install -y git-core python-setuptools python-dev python-lxml \
+        sudo apt-get install -y git-core python-setuptools python-dev python-lxml \
             python-pastescript python-pastedeploy python-paste sqlite3 \
             python-pysqlite2 python-sqlalchemy python-webob python-greenlet \
             python-routes libldap2-dev libsasl2-dev
@@ -213,17 +213,17 @@ EOF
     fi
 
     if [ "$ENABLE_SYSLOG" == 1 ]; then
-        sed -i -e '
+        sudo sed -i -e '
             /ModLoad.*imudp/s/^[#]//
             /UDPServerRun/s/^[#]//
         ' /etc/rsyslog.conf
-        /usr/sbin/service rsyslog restart
+        sudo /usr/sbin/service rsyslog restart
     fi
 
     if [ "$USE_IPV6" == 1 ]; then
-        apt-get install -y radvd
-        bash -c "echo 1 > /proc/sys/net/ipv6/conf/all/forwarding"
-        bash -c "echo 0 > /proc/sys/net/ipv6/conf/all/accept_ra"
+        sudo apt-get install -y radvd
+        sudo bash -c "echo 1 > /proc/sys/net/ipv6/conf/all/forwarding"
+        sudo bash -c "echo 0 > /proc/sys/net/ipv6/conf/all/accept_ra"
     fi
 
     if [ "$USE_MYSQL" == 1 ]; then
@@ -232,9 +232,9 @@ mysql-server-5.1 mysql-server/root_password password $MYSQL_PASS
 mysql-server-5.1 mysql-server/root_password_again password $MYSQL_PASS
 mysql-server-5.1 mysql-server/start_on_boot boolean true
 MYSQL_PRESEED
-        apt-get install -y mysql-server python-mysqldb
+        sudo apt-get install -y mysql-server python-mysqldb
     else
-        apt-get install -y sqlite3 python-pysqlite2
+        sudo apt-get install -y sqlite3 python-pysqlite2
     fi
     mkdir -p $DIR/images
     wget -c http://images.ansolabs.com/tty.tgz
@@ -399,7 +399,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     fi
     if [ "$ENABLE_DASH" == 1 ]; then
         if [ "$ENABLE_APACHE" == 1 ]; then
-            /etc/init.d/apache2 restart
+            sudo /etc/init.d/apache2 restart
             screen_it apache "tail -f /var/log/apache2/error.log"
         else
             screen_it dash "cd $DASH_DIR/openstack-dashboard; tools/with_venv.sh dashboard/manage.py runserver 0.0.0.0:80"
