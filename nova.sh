@@ -197,11 +197,8 @@ EOF
             python-pastescript python-pastedeploy python-paste sqlite3 \
             python-pysqlite2 python-sqlalchemy python-webob python-greenlet \
             python-routes libldap2-dev libsasl2-dev
-        easy_install pip
         rm -rf $KEYSTONE_DIR
         git clone https://github.com/openstack/keystone.git $KEYSTONE_DIR
-        cd $KEYSTONE_DIR
-        pip install -r tools/pip-requires
 
         # allow keystone code to be imported into nova
         ln -s $KEYSTONE_DIR/keystone $NOVA_DIR/keystone
