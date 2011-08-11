@@ -353,7 +353,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
         # add default data
 
         curl -OL https://raw.github.com/cloudbuilders/deploy.sh/master/initial_data.sh
-        bash BIN_DIR=$KEYSTONE_DIR/bin ./initial_data.sh
+        BIN_DIR=$KEYSTONE_DIR/bin bash initial_data.sh
     fi
     # create an admin user called 'admin'
     $NOVA_DIR/bin/nova-manage user admin admin admin admin
