@@ -417,7 +417,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     screen_it vnc "$NOVA_DIR/bin/nova-vncproxy"
     sleep 2
     # export environment variables for project 'admin' and user 'admin'
-    $NOVA_DIR/bin/nova-manage project zipfile admin admin $NOVA_DIR/nova.zip
+    $NOVA_DIR/bin/nova-manage project zipfile 1234 admin $NOVA_DIR/nova.zip
     unzip -o $NOVA_DIR/nova.zip -d $NOVA_DIR/
     screen_it test "export PATH=$NOVA_DIR/bin:$PATH;. $NOVA_DIR/novarc"
     if [ "$CMD" != "run_detached" ]; then
