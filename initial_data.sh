@@ -38,3 +38,5 @@ $BIN_DIR/keystone-manage $* endpoint add demo 3
 $BIN_DIR/keystone-manage $* endpoint add demo 4
 $BIN_DIR/keystone-manage $* endpoint add demo 5
 $BIN_DIR/keystone-manage $* endpoint add demo 6
+
+$BIN_DIR/keystone-manage $* credentials add admin EC2 'admin:admin' admin admin || echo "no support for adding credentials"
