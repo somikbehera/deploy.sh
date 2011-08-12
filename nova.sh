@@ -400,7 +400,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
         if [ "$ENABLE_SYSLOG" == 1 ]; then
             LOG_ARG="--log-config $KEYSTONE_DIR/etc/logging.cnf"
         fi
-        screen_it keyst "cd $KEYSTONE_DIR/bin; ./keystone --config-file $KEYSTONE_DIR/etc/keystone.conf $LOG_ARG"
+        screen_it keyst "$KEYSTONE_DIR/bin/keystone --config-file $KEYSTONE_DIR/etc/keystone.conf $LOG_ARG"
     fi
     if [ "$ENABLE_VOLUMES" == 1 ]; then
         screen_it vol "$NOVA_DIR/bin/nova-volume"
