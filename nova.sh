@@ -419,7 +419,7 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
     # export environment variables for project 'admin' and user 'admin'
     $NOVA_DIR/bin/nova-manage project zipfile admin admin $NOVA_DIR/nova.zip
     unzip -o $NOVA_DIR/nova.zip -d $NOVA_DIR/
-    screen_it test "export PATH=$NOVA_DIR/bin:$PATH;. $NOVA_DIR/novarc"
+    screen_it test "export PATH=$NOVA_DIR/bin:$PATH;. $NOVA_DIR/novarc; export NOVA_API_KEY=secrete; export NOVA_URL=http://localhost:5000/v2.0/"
     if [ "$CMD" != "run_detached" ]; then
       screen -S nova -x
     fi
