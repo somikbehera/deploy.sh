@@ -348,10 +348,8 @@ if [ "$CMD" == "run" ] || [ "$CMD" == "run_detached" ]; then
         fi
 
     else
-        rm -f $KEYSTONE_DIR/bin/keystone.db
-        rm -f $KEYSTONE_DIR/bin/keystone.token.db
+        rm -f keystone.db
         # add default data
-
         curl -OL https://raw.github.com/cloudbuilders/deploy.sh/master/initial_data.sh
         BIN_DIR=$KEYSTONE_DIR/bin bash initial_data.sh
     fi
