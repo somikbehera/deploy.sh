@@ -186,7 +186,7 @@ EOF
             python-argparse python-sqlalchemy python-wsgiref \
             python-pastedeploy python-xattr
         bzr branch lp:glance $GLANCE_DIR
-        mkdir -p /var/log/glance
+        sudo mkdir -p /var/log/glance
 
         if [ "$ENABLE_DASH" == 1 ]; then
            ln -s $GLANCE_DIR/glance $DASH_DIR/openstack-dashboard/dashboard/glance
