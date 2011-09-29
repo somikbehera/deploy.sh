@@ -54,7 +54,7 @@ apt-get -y update
 apt-get -y install curl gcc bzr memcached python-configobj python-coverage python-dev python-nose python-setuptools python-simplejson python-xattr sqlite3 xfsprogs python-webob python-eventlet python-greenlet python-pastedeploy python-netifaces
 
 mkdir -p /srv
-dd if=/dev/zero of=/srv/swift-disk bs=1024 count=0 seek=${LOOPBACK_DISK_SIZE}
+dd if=/dev/zero of=/srv/swift-disk bs=${LOOPBACK_DISK_SIZE} count=0 seek=1
 mkfs.xfs -f -i size=1024 /srv/swift-disk
 
 cat <<EOF>>/etc/fstab
